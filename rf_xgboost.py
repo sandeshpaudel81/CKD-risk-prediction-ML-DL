@@ -16,6 +16,10 @@ from sklearn.metrics import (classification_report, confusion_matrix,
 from xgboost import XGBClassifier
 from imblearn.over_sampling import SMOTE
 
+# conf
+import warnings
+warnings.filterwarnings("ignore", message="`sklearn.utils.parallel.delayed` should be used with `sklearn.utils.parallel.Parallel`")
+
 def create_folder():
     folders = ['plots', 'rf_xgb_results']
     cwd = os.getcwd()

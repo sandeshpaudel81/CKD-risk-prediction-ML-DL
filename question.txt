@@ -1,0 +1,69 @@
+I am in the final phase of IT thesis.. last submission is final report and video presentation (either slides or poster) total weighted 50% marks .. previous submitted are project plan (10%) and interim report (40%)
+I want to give detailed overview of my project:
+Dataset: A Dataset on Demographic and Lifestyle Factors for Prognosticating Chronic Kidney Disease Progression in Diabetic Patients (https://data.mendeley.com/datasets/hjkzgbxgv5/2)
+
+Dataset description: a curated dataset comprising 400 diabetic patients from BIRDEM General Hospital, Dhaka, Bangladesh, with the aim of supporting early CKD detection, and healthcare planning. Among the 400 patients, 185 were diagnosed with CKD, and 215 were non-CKD cases. All individuals had been leaving with diabetes for at least ten years, enduring a consistent CKD progressing window. The dataset contains 20 variables focused on demographic and lifestyle-related risk factors, including age, gender, occupation type, BMI, family history of diabetes, hypertension, heart disease, physical activity, sleep quality, smoking, water intake, and detailed daily calorie consumption. The unique strength of this dataset lies in its longitudinal structure, which captures the health trajectories of patients over a decade. This temporal data is essential for predicting CKD progression, as it allows for the modelling of risk factors over time, a critical aspect often missed in datasets relying on single-year data.
+(https://www.sciencedirect.com/science/article/pii/S2352340925011278)
+Dataset columns information: 
+Table 1. Description of feature attributes.
+
+Sl. No.	Risk Factors	Data Type	Description
+1	Gender	Categorical	Male (M), Female (F)
+2	Job	Categorical	Level of physical exertion during working life:
+Normal (Involves minimal physical effort as part of daily tasks, e.g., Banker); Intermediate (Includes moderate physical activity as part of the job, e.g., delivery worker; Heavy (Requires high exertion throughout the day, e.g., construction worker)
+3	Family history of diabetes	Boolean	Whether the patient’s parents had diabetes:
+Yes (1), No (0)
+4	Duration of diabetes	Integer	Number of years the patient has been diagnosed with diabetes
+5	Age (years)	Integer	Age of the patient in years
+6	BMI (kg/m2)	Float	kg/m²
+7	Follow suggested Diet	Boolean	Whether the patient consistently managed their diabetes by maintaining proper lifestyle:
+Yes (1), No (0)
+8	Take Medicine for Diabetes	Boolean	Whether the patient takes diabetes medication:
+Yes (1), No (0)
+9	Take Insulin	Boolean	Whether the patient takes insulin:
+Yes (1), No (0)
+10	Hypertension	Boolean	Whether the patient has hypertension (blood pressure consistently at or above 140/90 mm ¦Hg.):
+Yes (1), No (0)
+11	Heart Disease	Boolean	Whether the patient has heart disease:
+Yes (1), No (0)
+12	Sleep	Boolean	Typical sleep duration:
+(Inadequate(<7hours), Adequate(7–-9hours)):
+Sufficient (1), Insufficient (0)
+13	Water Consumption	Boolean	Level of water intake (Inadequate (less or equal to 2 litres/day) adequate (>2 litres/day)):
+Sufficient (1), Insufficient (0)
+14	Smoke	Boolean	Whether the patient smokes:
+Yes (1), No (0)
+15	Zarda, Betel Leaf	Boolean	Whether the patient consumes Zarda or betel leaf:
+Yes (1), No (0)
+16	Walk Regularly	Boolean	Whether the patient walks regularly (at least 30 min a day):
+Yes (1), No (0)
+17	Urination Properly	Boolean	Whether the patient can urinate properly without any discomfort:
+Yes (1), No (0)
+18	Urinary Infection	Boolean	Whether the patient has urinary infections
+Yes (1), No (0)
+19	Pain killer	Boolean	Whether the patient has to take pain killers in regular basis:
+Yes (1), No (0)
+20	Calorie Intake (Cal)	Integer	Average daily calorie intake
+Output	CKD	Boolean	Yes (1), No (0)
+
+Primary Goal Formulated: To predict CKD in sixth year using the data of previous five years (P(yt+1 | Xt-4 yt-4, Xt-3 yt-3, .. Xt-1 yt-1, Xt yt drop patient_id)
+
+Performed tasks so far:
+1. Preprocessing (added additional engineered features like bmi change, weight change from previous year, comorbidity score (has_hypertension+ has_heart_disease+urinary_infection+takes_pain_killer), lifestyle score (df['diet_regulation'] + df['takes_diabetes_medicine'] + df['takes_insulin']        + df['sufficient_sleep'] + df['sufficient_water_consumption'] + df['walk_regularly']), risk_behaviour(smoking habit + takes tobacco (zarda and betel leaf)) and ckd_years_so_far (cumsum function), and then splitted dataset into train and test set in a patient level and save preprocessed dataset, train set and test set.
+
+2.  Random Forest, XGBoost modelling
+load train and test set, create 5-year sliding windows and flatten, two types of windows (all windows and pre-onset only windows), pre-onset only windows does not contain CKD=1 in X set, scaled features using Standard scaler, applied SMOTE to handle class imbalance, parameter search for RF, then fit and evaluate on SMOTE data for both windows, for XGBoost four experiments from combination of (all windows, pre-onset) and (SMOTE balanced, pos_weight scaled) and studied feature importances of both RF and XGBoost, performance metrics for both PR-AUC, ROC-AUC, Recall, F1, and for threshold used youden j's optimisation
+
+3. Vanilla LSTM
+load train and test set, 5 year sliding window data in sequential form for LSTM, (n, 5, features), scaling, SMOTE, then four experiments from combination of (all windows, pre-onset) and (SMOTE balanced, pos_weight scaled), same performance metrics and threshold search
+
+4. BiLSTM + Attention
+load train and test set, 5 year sliding window data in sequential form, (n, 5, features), scaling, SMOTE, then four experiments from combination of (all windows, pre-onset) and (SMOTE balanced, pos_weight scaled), same performance metrics and threshold search and studied global attention weight for the each year which year did it focus on, patient level attention weight profile
+
+5. Statistical analysis on dataset
+patient level aggregation of dataset, divided into ckd1 (ever had ckd patients) and ckd0 (never had CKD patients) dataset, then mann whitney u test for continuous features, fisher exact test for binary, spearmann correlation
+
+6. SHAP Analysis on XGBoost
+both all windows and pre-onset SHAP values, visualised global SHAP value, SHAP importance by time step
+
+7.  

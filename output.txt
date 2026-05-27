@@ -1,0 +1,1704 @@
+Output of preprocessing.py:
+First 10 rows of the dataset:
+   Patient ID  ... CKD (1-yes, 0-no)
+0           1  ...                 0
+1           1  ...                 0
+2           1  ...                 0
+3           1  ...                 0
+4           1  ...                 0
+5           1  ...                 0
+6           1  ...                 0
+7           1  ...                 0
+8           1  ...                 0
+9           1  ...                 0
+
+[10 rows x 26 columns]
+
+Last 10 rows of the dataset:
+      Patient ID  ... CKD (1-yes, 0-no)
+3990         400  ...                 0
+3991         400  ...                 0
+3992         400  ...                 1
+3993         400  ...                 1
+3994         400  ...                 1
+3995         400  ...                 1
+3996         400  ...                 1
+3997         400  ...                 1
+3998         400  ...                 1
+3999         400  ...                 1
+
+[10 rows x 26 columns]
+<class 'pandas.DataFrame'>
+RangeIndex: 4000 entries, 0 to 3999
+Data columns (total 26 columns):
+ #   Column                                            Non-Null Count  Dtype  
+---  ------                                            --------------  -----  
+ 0   Patient ID                                        4000 non-null   int64  
+ 1   Gender (M-male, F-female)                         4000 non-null   str    
+ 2   Job (1-normal, 2-intermediate, 3-heavy)           4000 non-null   int64  
+ 3   Family Background of Diabetes (1-yes, 0-no)       4000 non-null   int64  
+ 4   Height (cm)                                       4000 non-null   float64
+ 5   Diabetic Year                                     4000 non-null   int64  
+ 6   Age                                               4000 non-null   int64  
+ 7   Average Age                                       4000 non-null   int64  
+ 8   Weight (kg)                                       4000 non-null   int64  
+ 9   Average Weight (kg)                               4000 non-null   float64
+ 10  BMI                                               4000 non-null   float64
+ 11  Follow suggested Diet (1-yes, 0-no)               4000 non-null   int64  
+ 12  Take Medicine for Diabetes (1-yes, 0-no)          4000 non-null   int64  
+ 13  Take Insulin (1-yes, 0-no)                        4000 non-null   int64  
+ 14  Hypertension (1-yes, 0-no)                        4000 non-null   int64  
+ 15  Heart Disease (1-yes, 0-no)                       4000 non-null   int64  
+ 16  Sleep (1-sufficient, 0-insufficient)              4000 non-null   int64  
+ 17  Water Consumption (1-sufficient, 0-insufficient)  4000 non-null   int64  
+ 18  Smoke (1-yes, 0-no)                               4000 non-null   int64  
+ 19  Zarda, Betel Leaf (1-yes, 0-no)                   4000 non-null   int64  
+ 20  Walk Regularly (1-yes, 0-no)                      4000 non-null   int64  
+ 21  Urination Properly (1-yes, 0-no)                  4000 non-null   int64  
+ 22  Urinary Infection (1-yes, 0-no)                   4000 non-null   int64  
+ 23  Pain killer (1-yes, 0-no)                         4000 non-null   int64  
+ 24  Calorie Intake (per day)                          4000 non-null   int64  
+ 25  CKD (1-yes, 0-no)                                 4000 non-null   int64  
+dtypes: float64(3), int64(22), str(1)
+memory usage: 812.6 KB
+
+Dataset Information:
+None
+
+Dataset Description:
+                                                   count  ...      max
+Patient ID                                        4000.0  ...   400.00
+Job (1-normal, 2-intermediate, 3-heavy)           4000.0  ...     3.00
+Family Background of Diabetes (1-yes, 0-no)       4000.0  ...     1.00
+Height (cm)                                       4000.0  ...   182.88
+Diabetic Year                                     4000.0  ...    41.00
+Age                                               4000.0  ...    89.00
+Average Age                                       4000.0  ...    85.00
+Weight (kg)                                       4000.0  ...    93.00
+Average Weight (kg)                               4000.0  ...    90.00
+BMI                                               4000.0  ...    41.66
+Follow suggested Diet (1-yes, 0-no)               4000.0  ...     1.00
+Take Medicine for Diabetes (1-yes, 0-no)          4000.0  ...     1.00
+Take Insulin (1-yes, 0-no)                        4000.0  ...     1.00
+Hypertension (1-yes, 0-no)                        4000.0  ...     1.00
+Heart Disease (1-yes, 0-no)                       4000.0  ...     1.00
+Sleep (1-sufficient, 0-insufficient)              4000.0  ...     1.00
+Water Consumption (1-sufficient, 0-insufficient)  4000.0  ...     1.00
+Smoke (1-yes, 0-no)                               4000.0  ...     1.00
+Zarda, Betel Leaf (1-yes, 0-no)                   4000.0  ...     1.00
+Walk Regularly (1-yes, 0-no)                      4000.0  ...     1.00
+Urination Properly (1-yes, 0-no)                  4000.0  ...     1.00
+Urinary Infection (1-yes, 0-no)                   4000.0  ...     1.00
+Pain killer (1-yes, 0-no)                         4000.0  ...     1.00
+Calorie Intake (per day)                          4000.0  ...  2400.00
+CKD (1-yes, 0-no)                                 4000.0  ...     1.00
+
+[25 rows x 8 columns]
+
+Missing values in each column:
+Patient ID                                          0
+Gender (M-male, F-female)                           0
+Job (1-normal, 2-intermediate, 3-heavy)             0
+Family Background of Diabetes (1-yes, 0-no)         0
+Height (cm)                                         0
+Diabetic Year                                       0
+Age                                                 0
+Average Age                                         0
+Weight (kg)                                         0
+Average Weight (kg)                                 0
+BMI                                                 0
+Follow suggested Diet (1-yes, 0-no)                 0
+Take Medicine for Diabetes (1-yes, 0-no)            0
+Take Insulin (1-yes, 0-no)                          0
+Hypertension (1-yes, 0-no)                          0
+Heart Disease (1-yes, 0-no)                         0
+Sleep (1-sufficient, 0-insufficient)                0
+Water Consumption (1-sufficient, 0-insufficient)    0
+Smoke (1-yes, 0-no)                                 0
+Zarda, Betel Leaf (1-yes, 0-no)                     0
+Walk Regularly (1-yes, 0-no)                        0
+Urination Properly (1-yes, 0-no)                    0
+Urinary Infection (1-yes, 0-no)                     0
+Pain killer (1-yes, 0-no)                           0
+Calorie Intake (per day)                            0
+CKD (1-yes, 0-no)                                   0
+dtype: int64
+
+Dataset shape: (4000, 26)
+
+Patients: 400
+
+Renamed columns:
+Index(['patient_id', 'gender', 'job', 'family_diabetic_history',
+       'height_in_cm', 'diabetic_year', 'age_in_years', 'average_age',
+       'weight_in_kg', 'average_weight', 'BMI_in_kg_per_m2', 'diet_regulation',
+       'takes_diabetes_medicine', 'takes_insulin', 'has_hypertension',
+       'has_heart_disease', 'sufficient_sleep', 'sufficient_water_consumption',
+       'smoking_habit', 'takes_tobacco', 'walk_regularly', 'proper_urination',
+       'urinary_infection', 'takes_pain_killer', 'calorie_intake_per_day',
+       'CKD'],
+      dtype='str')
+
+Columns after dropping aggregated columns:
+Index(['patient_id', 'gender', 'job', 'family_diabetic_history',
+       'height_in_cm', 'diabetic_year', 'age_in_years', 'weight_in_kg',
+       'BMI_in_kg_per_m2', 'diet_regulation', 'takes_diabetes_medicine',
+       'takes_insulin', 'has_hypertension', 'has_heart_disease',
+       'sufficient_sleep', 'sufficient_water_consumption', 'smoking_habit',
+       'takes_tobacco', 'walk_regularly', 'proper_urination',
+       'urinary_infection', 'takes_pain_killer', 'calorie_intake_per_day',
+       'CKD'],
+      dtype='str')
+
+Binary-encoding the feature 'Gender'...
+
+Unique values in 'gender' column after encoding: [0 1]
+
+Columns after adding new features 30:
+Index(['patient_id', 'gender', 'job', 'family_diabetic_history',
+       'height_in_cm', 'diabetic_year', 'age_in_years', 'weight_in_kg',
+       'BMI_in_kg_per_m2', 'diet_regulation', 'takes_diabetes_medicine',
+       'takes_insulin', 'has_hypertension', 'has_heart_disease',
+       'sufficient_sleep', 'sufficient_water_consumption', 'smoking_habit',
+       'takes_tobacco', 'walk_regularly', 'proper_urination',
+       'urinary_infection', 'takes_pain_killer', 'calorie_intake_per_day',
+       'CKD', 'bmi_change', 'weight_change', 'comorbidity_score',
+       'lifestyle_score', 'risk_behaviour', 'ckd_years_so_far'],
+      dtype='str')
+
+Splitting data into train, validation and test sets...
+
+After Split — Train: 280 patients | Val: 60 patients | Test: 60 patients
+
+Saving cleaned datasets and split datasets for later use...
+
+Data preprocessing completed and saved successfully!
+
+Output of rf_xgboost.py:
+Feature columns (29): ['gender', 'job', 'family_diabetic_history', 'height_in_cm', 'diabetic_year', 'age_in_years', 'weight_in_kg', 'BMI_in_kg_per_m2', 'diet_regulation', 'takes_diabetes_medicine', 'takes_insulin', 'has_hypertension', 'has_heart_disease', 'sufficient_sleep', 'sufficient_water_consumption', 'smoking_habit', 'takes_tobacco', 'walk_regularly', 'proper_urination', 'urinary_infection', 'takes_pain_killer', 'calorie_intake_per_day', 'CKD', 'bmi_change', 'weight_change', 'comorbidity_score', 'lifestyle_score', 'risk_behaviour', 'ckd_years_so_far']
+── All windows ──
+Train: (1400, 145) CKD=1: 256
+Val:   (300, 145) CKD=1: 51
+Test:  (300, 145) CKD=1: 48
+── Pre-onset windows ──
+Train: (1257, 145) CKD=1: 113
+Val: (275, 145) CKD=1: 26
+Test: (277, 145) CKD=1: 25
+
+Scaling features...
+Applying SMOTE to all-windows train...
+ Before SMOTE - CKD=0: 1144  CKD=1: 256
+  After SMOTE — CKD=0: 1144  CKD=1: 1144
+Applying SMOTE to pre-onset train...
+ Before SMOTE - CKD=0: 1144  CKD=1: 113
+  After SMOTE — CKD=0: 1144  CKD=1: 1144
+ ──--------- Random Forest ------------
+Fitting 3 folds for each of 30 candidates, totalling 90 fits
+Best RF params: {'n_estimators': 300, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'sqrt', 'max_depth': 30, 'class_weight': {0: 1, 1: 5}}
+Best CV AUC   : 0.9612
+
+Random Forest  |  All windows
+
+Optimal threshold (Youden's J on val): 0.249
+              precision    recall  f1-score   support
+
+      No CKD       0.92      0.75      0.83       252
+         CKD       0.33      0.65      0.44        48
+
+    accuracy                           0.74       300
+   macro avg       0.63      0.70      0.63       300
+weighted avg       0.82      0.74      0.77       300
+
+  ROC-AUC  : 0.8313
+  PR-AUC   : 0.6860
+
+  Confusion matrix:
+  TN=190  FP=62
+  FN=17  TP=31
+
+Fitting 3 folds for each of 30 candidates, totalling 90 fits
+Best RF params: {'n_estimators': 300, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'log2', 'max_depth': None, 'class_weight': 'balanced'}
+Best CV AUC   : 0.9622
+Random Forest  |  Pre-onset only
+Optimal threshold (Youden's J on val): 0.216
+
+              precision    recall  f1-score   support
+
+      No CKD       0.94      0.60      0.74       252
+         CKD       0.14      0.64      0.23        25
+
+    accuracy                           0.61       277
+   macro avg       0.54      0.62      0.48       277
+weighted avg       0.87      0.61      0.69       277
+
+  ROC-AUC  : 0.7065
+  PR-AUC   : 0.2058
+
+  Confusion matrix:
+  TN=152  FP=100
+  FN=9  TP=16
+
+Top 20 RF feature importances (All windows):
+CKD_t0                        0.090941
+CKD_t-1                       0.032050
+ckd_years_so_far_t0           0.031729
+diabetic_year_t-4             0.018579
+calorie_intake_per_day_t-1    0.017553
+takes_insulin_t0              0.017353
+diabetic_year_t-3             0.017266
+diabetic_year_t-2             0.017245
+calorie_intake_per_day_t-4    0.016774
+diabetic_year_t0              0.016443
+calorie_intake_per_day_t0     0.016194
+BMI_in_kg_per_m2_t-2          0.015936
+diabetic_year_t-1             0.015709
+bmi_change_t0                 0.015363
+calorie_intake_per_day_t-2    0.015072
+BMI_in_kg_per_m2_t-3          0.014986
+takes_insulin_t-1             0.014670
+calorie_intake_per_day_t-3    0.014630
+BMI_in_kg_per_m2_t-1          0.013960
+weight_in_kg_t-4              0.013401
+
+Top 20 RF feature importances (Pre-onset only):
+takes_insulin_t0              0.025749
+calorie_intake_per_day_t-4    0.024427
+calorie_intake_per_day_t-1    0.023634
+diabetic_year_t-3             0.023003
+calorie_intake_per_day_t-2    0.022836
+diabetic_year_t-4             0.022713
+takes_insulin_t-2             0.022677
+diabetic_year_t-1             0.022598
+calorie_intake_per_day_t-3    0.021868
+takes_insulin_t-1             0.020693
+calorie_intake_per_day_t0     0.020068
+diabetic_year_t0              0.019457
+diabetic_year_t-2             0.019367
+takes_insulin_t-3             0.016495
+weight_change_t0              0.016119
+takes_insulin_t-4             0.014635
+bmi_change_t0                 0.014270
+comorbidity_score_t-1         0.012705
+bmi_change_t-4                0.012415
+weight_change_t-2             0.011512
+
+ ──--------- XGBoost ------------
+
+Training XGBoost on all windows (pos_weight scaled)...
+
+ XGBoost model training on pos_scaled data for All windows experiment..
+scale_pos_weight: 4.47
+Fitting 3 folds for each of 30 candidates, totalling 90 fits
+Best XGB params: {'subsample': 0.6, 'reg_lambda': 5.0, 'reg_alpha': 1.0, 'n_estimators': 200, 'min_child_weight': 1, 'max_depth': 4, 'learning_rate': 0.01, 'gamma': 0.1, 'colsample_bytree': 1.0}
+Best CV AUC    : 0.8523
+XGBoost  |  All windows
+
+Optimal threshold (Youden's J on val): 0.449
+              precision    recall  f1-score   support
+
+      No CKD       0.93      0.94      0.93       252
+         CKD       0.67      0.62      0.65        48
+
+    accuracy                           0.89       300
+   macro avg       0.80      0.78      0.79       300
+weighted avg       0.89      0.89      0.89       300
+
+  ROC-AUC  : 0.8742
+  PR-AUC   : 0.7346
+
+  Confusion matrix:
+  TN=237  FP=15
+  FN=18  TP=30
+
+Training XGBoost on pre-onset windows (pos_weight scaled)...
+ XGBoost model training on pos_scaled data for Pre-onset only experiment..
+scale_pos_weight: 10.12
+Fitting 3 folds for each of 30 candidates, totalling 90 fits
+Best XGB params: {'subsample': 0.6, 'reg_lambda': 10.0, 'reg_alpha': 0.1, 'n_estimators': 300, 'min_child_weight': 5, 'max_depth': 4, 'learning_rate': 0.01, 'gamma': 0.3, 'colsample_bytree': 1.0}
+Best CV AUC    : 0.5969
+
+XGBoost  |  Pre-onset only
+
+Optimal threshold (Youden's J on val): 0.328
+              precision    recall  f1-score   support
+
+      No CKD       0.97      0.60      0.74       252
+         CKD       0.17      0.80      0.28        25
+
+    accuracy                           0.62       277
+   macro avg       0.57      0.70      0.51       277
+weighted avg       0.90      0.62      0.70       277
+
+  ROC-AUC  : 0.7295
+  PR-AUC   : 0.2615
+
+  Confusion matrix:
+  TN=152  FP=100
+  FN=5  TP=20
+
+Training XGBoost on all windows (SMOTE)...
+ XGBoost model training on SMOTE data for All windows experiment..
+Fitting 3 folds for each of 30 candidates, totalling 90 fits
+Best XGB params: {'subsample': 0.6, 'reg_lambda': 5.0, 'reg_alpha': 0, 'n_estimators': 200, 'min_child_weight': 1, 'max_depth': 6, 'learning_rate': 0.1, 'gamma': 0, 'colsample_bytree': 0.6}
+Best CV AUC    : 0.9746
+
+XGBoost  |  All windows
+
+Optimal threshold (Youden's J on val): 0.244
+              precision    recall  f1-score   support
+
+      No CKD       0.92      0.93      0.92       252
+         CKD       0.60      0.56      0.58        48
+
+    accuracy                           0.87       300
+   macro avg       0.76      0.75      0.75       300
+weighted avg       0.87      0.87      0.87       300
+
+  ROC-AUC  : 0.8455
+  PR-AUC   : 0.7015
+
+  Confusion matrix:
+  TN=234  FP=18
+  FN=21  TP=27
+
+Training XGBoost on pre-onset windows (SMOTE)...
+ XGBoost model training on SMOTE data for Pre-onset only experiment..
+Fitting 3 folds for each of 30 candidates, totalling 90 fits
+Best XGB params: {'subsample': 0.6, 'reg_lambda': 5.0, 'reg_alpha': 0, 'n_estimators': 200, 'min_child_weight': 1, 'max_depth': 6, 'learning_rate': 0.1, 'gamma': 0, 'colsample_bytree': 0.6}
+Best CV AUC    : 0.9756
+
+XGBoost  |  Pre-onset only
+
+Optimal threshold (Youden's J on val): 0.052
+
+              precision    recall  f1-score   support
+
+      No CKD       0.95      0.68      0.79       252
+         CKD       0.16      0.64      0.26        25
+
+    accuracy                           0.68       277
+   macro avg       0.56      0.66      0.53       277
+weighted avg       0.88      0.68      0.74       277
+
+  ROC-AUC  : 0.6821
+  PR-AUC   : 0.2133
+
+  Confusion matrix:
+  TN=171  FP=81
+  FN=9  TP=16
+
+Top 20 XGBoost feature importances:
+CKD_t0                        0.124599
+urinary_infection_t-1         0.021259
+proper_urination_t0           0.020849
+proper_urination_t-2          0.020812
+diabetic_year_t-4             0.020662
+proper_urination_t-1          0.018939
+takes_insulin_t-1             0.018327
+weight_change_t-2             0.018077
+comorbidity_score_t-3         0.018067
+has_heart_disease_t0          0.017867
+urinary_infection_t-3         0.017780
+urinary_infection_t-2         0.017316
+weight_change_t-4             0.016958
+comorbidity_score_t0          0.016312
+diet_regulation_t0            0.016122
+takes_insulin_t-2             0.015796
+diet_regulation_t-4           0.015483
+takes_pain_killer_t-1         0.014756
+sufficient_sleep_t-4          0.014159
+calorie_intake_per_day_t-4    0.013826
+
+========= Summary of Results =========
+
+Random Forest Results:
+        Model     Experiment  ROC-AUC  PR-AUC  F1 (CKD)  Recall (CKD)  Threshold
+Random Forest    All windows   0.8313  0.6860    0.4397        0.6458      0.249
+Random Forest Pre-onset only   0.7065  0.2058    0.2270        0.6400      0.216
+
+XGBoost (pos_scale balanced) Results:
+  Model     Experiment  ROC-AUC  PR-AUC  F1 (CKD)  Recall (CKD)  Threshold
+XGBoost    All windows   0.8742  0.7346    0.6452         0.625      0.449
+XGBoost Pre-onset only   0.7295  0.2615    0.2759         0.800      0.328
+
+XGBoost (SMOTE balanced) Results:
+  Model     Experiment  ROC-AUC  PR-AUC  F1 (CKD)  Recall (CKD)  Threshold
+XGBoost    All windows   0.8455  0.7015    0.5806        0.5625      0.244
+XGBoost Pre-onset only   0.6821  0.2133    0.2623        0.6400      0.052
+
+Result visualization and saving results to files ...
+
+Output of vanilla_lstm.py:
+Device: cpu
+Vanilla LSTM modeling...
+Feature columns (29): ['gender', 'job', 'family_diabetic_history', 'height_in_cm', 'diabetic_year', 'age_in_years', 'weight_in_kg', 'BMI_in_kg_per_m2', 'diet_regulation', 'takes_diabetes_medicine', 'takes_insulin', 'has_hypertension', 'has_heart_disease', 'sufficient_sleep', 'sufficient_water_consumption', 'smoking_habit', 'takes_tobacco', 'walk_regularly', 'proper_urination', 'urinary_infection', 'takes_pain_killer', 'calorie_intake_per_day', 'CKD', 'bmi_change', 'weight_change', 'comorbidity_score', 'lifestyle_score', 'risk_behaviour', 'ckd_years_so_far']
+
+All-windows  — Train: (1400, 5, 29)  CKD=1: 256
+Pre-onset    — Train: (1257, 5, 29)  CKD=1: 113
+SMOTE for LSTM all-windows train...
+  After SMOTE — CKD=0: 1144  CKD=1: 1144
+SMOTE for LSTM pre-onset train...
+  After SMOTE — CKD=0: 1144  CKD=1: 1144
+
+ Training Vanilla LSTM on pos_scaled data for All windows experiment..
+  pos_weight: 4.47  |  n_features: 29
+  Parameters: 24,385
+  Epoch   1 | train_loss: 1.0679 | val_loss: 0.9855 | val_AUC: 0.7546
+  Epoch  10 | train_loss: 0.5217 | val_loss: 1.0326 | val_AUC: 0.7956
+  Epoch  20 | train_loss: 0.3663 | val_loss: 1.5940 | val_AUC: 0.7894
+  Early stopping at epoch 28. Best val AUC: 0.8023
+
+  Vanilla LSTM (pos weight)  |  All windows
+  Optimal threshold (Youden's J on val): 0.161
+              precision    recall  f1-score   support
+
+      No CKD       0.93      0.73      0.82       252
+         CKD       0.34      0.71      0.46        48
+
+    accuracy                           0.73       300
+   macro avg       0.63      0.72      0.64       300
+weighted avg       0.83      0.73      0.76       300
+
+  ROC-AUC : 0.8284
+  PR-AUC  : 0.6738
+
+  Confusion matrix:
+  TN=185  FP=67
+  FN=14  TP=34
+
+ Training Vanilla LSTM on pos_scaled data for Pre-onset only experiment..
+  pos_weight: 10.12  |  n_features: 29
+  Parameters: 24,385
+  Epoch   1 | train_loss: 1.2481 | val_loss: 1.2728 | val_AUC: 0.5964
+  Epoch  10 | train_loss: 0.8810 | val_loss: 2.1756 | val_AUC: 0.6013
+  Early stopping at epoch 15. Best val AUC: 0.6464
+
+  Vanilla LSTM (pos weight)  |  Pre-onset only
+  Optimal threshold (Youden's J on val): 0.417
+              precision    recall  f1-score   support
+
+      No CKD       0.95      0.65      0.77       252
+         CKD       0.15      0.64      0.25        25
+
+    accuracy                           0.65       277
+   macro avg       0.55      0.64      0.51       277
+weighted avg       0.88      0.65      0.72       277
+
+  ROC-AUC : 0.6843
+  PR-AUC  : 0.2152
+
+  Confusion matrix:
+  TN=163  FP=89
+  FN=9  TP=16
+
+ Training Vanilla LSTM on SMOTE data for All windows experiment..
+  Parameters: 24,385
+  Epoch   1 | train_loss: 0.5775 | val_loss: 0.5170 | val_AUC: 0.7286
+  Epoch  10 | train_loss: 0.1609 | val_loss: 0.7100 | val_AUC: 0.7949
+  Early stopping at epoch 17. Best val AUC: 0.8025
+  Vanilla LSTM (SMOTE)  |  All windows
+  Optimal threshold (Youden's J on val): 0.508
+              precision    recall  f1-score   support
+
+      No CKD       0.92      0.91      0.91       252
+         CKD       0.55      0.58      0.57        48
+
+    accuracy                           0.86       300
+   macro avg       0.73      0.75      0.74       300
+weighted avg       0.86      0.86      0.86       300
+
+  ROC-AUC : 0.8055
+  PR-AUC  : 0.6614
+
+  Confusion matrix:
+  TN=229  FP=23
+  FN=20  TP=28
+
+ Training Vanilla LSTM on SMOTE data for Pre-onset only experiment..
+  Parameters: 24,385
+  Epoch   1 | train_loss: 0.6342 | val_loss: 0.6200 | val_AUC: 0.6370
+  Epoch  10 | train_loss: 0.1631 | val_loss: 1.1390 | val_AUC: 0.5783
+  Early stopping at epoch 13. Best val AUC: 0.6370
+  Vanilla LSTM (SMOTE)  |  Pre-onset only
+  Optimal threshold (Youden's J on val): 0.431
+
+              precision    recall  f1-score   support
+
+      No CKD       0.93      0.62      0.75       252
+         CKD       0.12      0.52      0.20        25
+
+    accuracy                           0.61       277
+   macro avg       0.52      0.57      0.47       277
+weighted avg       0.86      0.61      0.70       277
+
+  ROC-AUC : 0.6976
+  PR-AUC  : 0.2277
+
+  Confusion matrix:
+  TN=157  FP=95
+  FN=12  TP=13
+
+Vanilla LSTM (pos_weight balanced) Results:
+                    Model     Experiment  ROC-AUC  PR-AUC  F1 (CKD)  Recall (CKD)  Threshold
+Vanilla LSTM (pos weight)    All windows   0.8284  0.6738    0.4564        0.7083      0.161
+Vanilla LSTM (pos weight) Pre-onset only   0.6843  0.2152    0.2462        0.6400      0.417
+
+Vanilla LSTM (SMOTE balanced) Results:
+               Model     Experiment  ROC-AUC  PR-AUC  F1 (CKD)  Recall (CKD)  Threshold
+Vanilla LSTM (SMOTE)    All windows   0.8055  0.6614    0.5657        0.5833      0.508
+Vanilla LSTM (SMOTE) Pre-onset only   0.6976  0.2277    0.1955        0.5200      0.431
+
+Output of bilstm_attention.py:
+Device: cpu
+Running BiLSTM with Attention...
+Feature columns (29): ['gender', 'job', 'family_diabetic_history', 'height_in_cm', 'diabetic_year', 'age_in_years', 'weight_in_kg', 'BMI_in_kg_per_m2', 'diet_regulation', 'takes_diabetes_medicine', 'takes_insulin', 'has_hypertension', 'has_heart_disease', 'sufficient_sleep', 'sufficient_water_consumption', 'smoking_habit', 'takes_tobacco', 'walk_regularly', 'proper_urination', 'urinary_infection', 'takes_pain_killer', 'calorie_intake_per_day', 'CKD', 'bmi_change', 'weight_change', 'comorbidity_score', 'lifestyle_score', 'risk_behaviour', 'ckd_years_so_far']
+
+All-windows  — Train: (1400, 5, 29)  CKD=1: 256
+Pre-onset    — Train: (1257, 5, 29)  CKD=1: 113
+SMOTE for LSTM all-windows train...
+  After SMOTE — CKD=0: 1144  CKD=1: 1144
+SMOTE for LSTM pre-onset train...
+  After SMOTE — CKD=0: 1144  CKD=1: 1144
+
+ Training BiLSTM+Attention on pos_scaled data for All windows experiment..
+  pos_weight: 4.47  |  n_features: 29
+  Parameters: 16,386
+  Epoch   1 | train_loss: 1.0639 | val_loss: 0.9748 | val_AUC: 0.7095
+  Epoch  10 | train_loss: 0.6280 | val_loss: 0.8329 | val_AUC: 0.8064
+  Epoch  20 | train_loss: 0.5355 | val_loss: 0.9392 | val_AUC: 0.8038
+  Epoch  30 | train_loss: 0.4860 | val_loss: 0.9862 | val_AUC: 0.8069
+  Early stopping at epoch 30. Best val AUC: 0.8164
+BiLSTM + Attention  |  All windows
+  Optimal threshold (Youden's J on val): 0.724
+              precision    recall  f1-score   support
+
+      No CKD       0.91      1.00      0.95       252
+         CKD       0.96      0.50      0.66        48
+
+    accuracy                           0.92       300
+   macro avg       0.94      0.75      0.81       300
+weighted avg       0.92      0.92      0.91       300
+
+  ROC-AUC : 0.8375
+  PR-AUC  : 0.6944
+
+  Confusion matrix:
+  TN=251  FP=1
+  FN=24  TP=24
+
+ Training BiLSTM+Attention on pos_scaled data for Pre-onset only experiment..
+  pos_weight: 10.12  |  n_features: 29
+  Parameters: 16,386
+  Epoch   1 | train_loss: 1.3185 | val_loss: 1.2958 | val_AUC: 0.5639
+  Epoch  10 | train_loss: 1.0238 | val_loss: 1.3759 | val_AUC: 0.6321
+  Epoch  20 | train_loss: 0.9189 | val_loss: 1.5906 | val_AUC: 0.6157
+  Early stopping at epoch 28. Best val AUC: 0.6347
+BiLSTM + Attention  |  Pre-onset only
+  Optimal threshold (Youden's J on val): 0.271
+              precision    recall  f1-score   support
+
+      No CKD       0.97      0.40      0.56       252
+         CKD       0.13      0.88      0.22        25
+
+    accuracy                           0.44       277
+   macro avg       0.55      0.64      0.39       277
+weighted avg       0.89      0.44      0.53       277
+
+  ROC-AUC : 0.6919
+  PR-AUC  : 0.1833
+
+  Confusion matrix:
+  TN=100  FP=152
+  FN=3  TP=22
+
+BiLSTM + Attention Results:
+             Model     Experiment  ROC-AUC  PR-AUC  F1 (CKD)  Recall (CKD)  Threshold
+BiLSTM + Attention    All windows   0.8375  0.6944    0.6575          0.50      0.724
+BiLSTM + Attention Pre-onset only   0.6919  0.1833    0.2211          0.88      0.271
+
+Output of shap_analysis.py:
+Initializing SHAP analysis...
+Dataset shape: (4000, 30)
+Patients: 400
+CKD=1 rows: 386.0 / 4000
+All columns (30): Index(['patient_id', 'gender', 'job', 'family_diabetic_history',
+       'height_in_cm', 'diabetic_year', 'age_in_years', 'weight_in_kg',
+       'BMI_in_kg_per_m2', 'diet_regulation', 'takes_diabetes_medicine',
+       'takes_insulin', 'has_hypertension', 'has_heart_disease',
+       'sufficient_sleep', 'sufficient_water_consumption', 'smoking_habit',
+       'takes_tobacco', 'walk_regularly', 'proper_urination',
+       'urinary_infection', 'takes_pain_killer', 'calorie_intake_per_day',
+       'CKD', 'bmi_change', 'weight_change', 'comorbidity_score',
+       'lifestyle_score', 'risk_behaviour', 'ckd_years_so_far'],
+      dtype='str')
+
+Loading trained XGBoost model and test dataset of all windows...
+Loaded saved model and test data.
+
+Loading trained XGBoost model and test dataset of pre-onset windows...
+Loaded saved model and test data.
+Test dataset for all windows setup: (300, 145)
+Test dataset for pre-onset windows setup: (277, 145)
+
+Computing SHAP values for all windows windows...
+SHAP values shape: (300, 145)
+Baseline (expected) prediction: 0.0392
+
+Computing SHAP values for pre-onset windows windows...
+SHAP values shape: (277, 145)
+Baseline (expected) prediction: 0.2869
+
+Top 15 features by mean absolute SHAP:
+bmi_change                 0.274521
+diabetic_year              0.242957
+BMI_in_kg_per_m2           0.121984
+takes_insulin              0.117231
+calorie_intake_per_day     0.061476
+weight_in_kg               0.054165
+comorbidity_score          0.048829
+urinary_infection          0.045333
+proper_urination           0.041548
+has_heart_disease          0.032027
+age_in_years               0.027705
+has_hypertension           0.014657
+lifestyle_score            0.012997
+takes_diabetes_medicine    0.012848
+risk_behaviour             0.011713
+
+Top 15 features by mean absolute SHAP:
+bmi_change                0.553219
+diabetic_year             0.413884
+BMI_in_kg_per_m2          0.233312
+takes_insulin             0.231128
+calorie_intake_per_day    0.160698
+weight_in_kg              0.150969
+comorbidity_score         0.140169
+urinary_infection         0.074707
+age_in_years              0.062278
+has_hypertension          0.060646
+sufficient_sleep          0.046359
+has_heart_disease         0.045312
+proper_urination          0.044791
+height_in_cm              0.036386
+lifestyle_score           0.034277
+
+SHAP importance by time step:
+t-4    0.018323
+t-3    0.004401
+t-2    0.004574
+t-1    0.006211
+t0     0.036238
+
+Output of statistical_analysis.py:
+Statistical analysis of the dataset...
+Importing cleaned datasets from files...
+Dataset shape: (4000, 30)
+Patients: 400
+CKD=1 rows: 386.0 / 4000
+All columns (30): Index(['patient_id', 'gender', 'job', 'family_diabetic_history',
+       'height_in_cm', 'diabetic_year', 'age_in_years', 'weight_in_kg',
+       'BMI_in_kg_per_m2', 'diet_regulation', 'takes_diabetes_medicine',
+       'takes_insulin', 'has_hypertension', 'has_heart_disease',
+       'sufficient_sleep', 'sufficient_water_consumption', 'smoking_habit',
+       'takes_tobacco', 'walk_regularly', 'proper_urination',
+       'urinary_infection', 'takes_pain_killer', 'calorie_intake_per_day',
+       'CKD', 'bmi_change', 'weight_change', 'comorbidity_score',
+       'lifestyle_score', 'risk_behaviour', 'ckd_years_so_far'],
+      dtype='str')
+CKD=1 records: 386  |  CKD=0 records: 3614
+Patient-level summary:
+  Developed CKD : 185 patients
+  Never CKD     : 215 patients
+Mann-Whitney U Test for Continuous Variables
+  (CKD=1 rows vs CKD=0 rows)
+               Feature         CKD=1 median(IQR)         CKD=0 median(IQR)      p-value  Effect size (r) Significance
+      ckd_years_so_far          1.00 (0.00–2.00)          0.00 (0.00–0.00) 0.000000e+00           -0.521         High
+         diabetic_year         9.00 (8.00–11.75)         8.00 (4.00–12.00) 2.763888e-15           -0.244         High
+          age_in_years       52.50 (48.00–60.00)       50.00 (43.00–57.00) 6.467183e-08           -0.167         High
+     comorbidity_score          1.00 (1.00–2.00)          1.00 (0.00–2.00) 1.363880e-06           -0.142         High
+      BMI_in_kg_per_m2       24.99 (23.05–27.63)       24.33 (22.01–26.84) 1.836385e-06           -0.148         High
+calorie_intake_per_day 1500.00 (1400.00–1600.00) 1400.00 (1300.00–1500.00) 2.620383e-05           -0.128         High
+         weight_change        -1.00 (-1.00–1.00)         0.00 (-1.00–1.00) 3.836026e-05            0.125         High
+       lifestyle_score          5.00 (4.00–5.00)          4.00 (3.00–5.00) 4.058052e-05           -0.123         High
+            bmi_change        -0.32 (-0.44–0.41)         0.00 (-0.40–0.42) 4.080680e-05            0.126         High
+          weight_in_kg       62.00 (58.00–69.00)       61.00 (54.00–68.00) 1.556608e-03           -0.098          Mid
+          height_in_cm    157.48 (152.40–164.00)    157.48 (152.40–164.00) 4.466448e-02            0.062          Low
+Chi-square Test for Binary Variables (with Odds Ratio)
+  (Prevalence in CKD and Non-CKD)
+                Feature  CKD=1 (%)  CKD=0 (%)  Odds Ratio      p-value Significance  Interpretation
+          takes_insulin       73.8       52.8       2.520 8.354992e-16         High     Risk factor
+      urinary_infection       34.2       22.6       1.785 7.958082e-07         High     Risk factor
+         walk_regularly       72.8       62.6       1.600 5.982930e-05         High     Risk factor
+      has_heart_disease       30.1       23.0       1.439 2.463826e-03          Mid     Risk factor
+       proper_urination       80.1       85.7       0.667 4.049456e-03          Mid      Protective
+      takes_pain_killer       35.5       28.7       1.365 6.773795e-03          Mid     Risk factor
+family_diabetic_history       37.3       42.8       0.796 3.948224e-02          Low      Protective
+          smoking_habit       16.8       13.3       1.319 6.096953e-02           NS Not significant
+          takes_tobacco       22.3       25.1       0.856 2.391048e-01           NS Not significant
+       sufficient_sleep       56.7       58.9       0.914 4.148666e-01           NS Not significant
+takes_diabetes_medicine       74.1       75.2       0.946 6.649518e-01           NS Not significant
+        diet_regulation       77.2       76.8       1.021 8.991010e-01           NS Not significant
+                 gender       36.0       36.3       0.989 9.556000e-01           NS Not significant
+       has_hypertension       29.3       29.2       1.001 1.000000e+00           NS Not significant
+SPEARMAN CORRELATION — All features vs CKD label
+                Feature  Spearman r  p-value Significant
+       ckd_years_so_far      0.7035 0.000000        High
+          diabetic_year      0.1249 0.000000        High
+          takes_insulin      0.1247 0.000000        High
+           age_in_years      0.0855 0.000000        High
+      urinary_infection      0.0809 0.000000        High
+      comorbidity_score      0.0764 0.000001        High
+       BMI_in_kg_per_m2      0.0754 0.000002        High
+ calorie_intake_per_day      0.0665 0.000026        High
+          weight_change     -0.0651 0.000038        High
+             bmi_change     -0.0649 0.000040        High
+        lifestyle_score      0.0649 0.000040        High
+         walk_regularly      0.0626 0.000074        High
+           weight_in_kg      0.0500 0.001549         Mid
+      has_heart_disease      0.0490 0.001925         Mid
+       proper_urination     -0.0474 0.002723         Mid
+      takes_pain_killer      0.0439 0.005496         Mid
+family_diabetic_history     -0.0327 0.038562         Low
+           height_in_cm     -0.0318 0.044648         Low
+          smoking_habit      0.0304 0.054857          NS
+          takes_tobacco     -0.0193 0.223407          NS
+       sufficient_sleep     -0.0132 0.403761          NS
+                    job     -0.0085 0.590430          NS
+takes_diabetes_medicine     -0.0072 0.647773          NS
+         risk_behaviour      0.0058 0.712822          NS
+        diet_regulation      0.0025 0.872653          NS
+                 gender     -0.0016 0.917960          NS
+       has_hypertension      0.0002 0.991081          NS
+
+CORRECTED p-values
+Bonferroni Vs. Holm-Bonferroni
+                Feature      p-value  p-adjusted_b  Significance_Bonferroni  p-adjusted_hb  Significance_Holm
+       ckd_years_so_far 0.000000e+00  0.000000e+00                     True   0.000000e+00               True
+          takes_insulin 8.354992e-16  2.088748e-14                     True   2.005198e-14               True
+          diabetic_year 2.763888e-15  6.909720e-14                     True   6.356943e-14               True
+           age_in_years 6.467183e-08  1.616796e-06                     True   1.422780e-06               True
+      urinary_infection 7.958082e-07  1.989521e-05                     True   1.671197e-05               True
+      comorbidity_score 1.363880e-06  3.409701e-05                     True   2.727760e-05               True
+       BMI_in_kg_per_m2 1.836385e-06  4.590962e-05                     True   3.489131e-05               True
+ calorie_intake_per_day 2.620383e-05  6.550958e-04                     True   4.716690e-04               True
+          weight_change 3.836026e-05  9.590065e-04                     True   6.521244e-04               True
+        lifestyle_score 4.058052e-05  1.014513e-03                     True   6.521244e-04               True
+             bmi_change 4.080680e-05  1.020170e-03                     True   6.521244e-04               True
+         walk_regularly 5.982930e-05  1.495733e-03                     True   8.376102e-04               True
+           weight_in_kg 1.556608e-03  3.891521e-02                     True   2.023591e-02               True
+      has_heart_disease 2.463826e-03  6.159564e-02                    False   2.956591e-02               True
+       proper_urination 4.049456e-03  1.012364e-01                    False   4.454402e-02               True
+      takes_pain_killer 6.773795e-03  1.693449e-01                    False   6.773795e-02              False
+family_diabetic_history 3.948224e-02  9.870559e-01                    False   3.553401e-01              False
+           height_in_cm 4.466448e-02  1.000000e+00                    False   3.573158e-01              False
+          smoking_habit 6.096953e-02  1.000000e+00                    False   4.267867e-01              False
+          takes_tobacco 2.391048e-01  1.000000e+00                    False   1.000000e+00              False
+       sufficient_sleep 4.148666e-01  1.000000e+00                    False   1.000000e+00              False
+takes_diabetes_medicine 6.649518e-01  1.000000e+00                    False   1.000000e+00              False
+        diet_regulation 8.991010e-01  1.000000e+00                    False   1.000000e+00              False
+                 gender 9.556000e-01  1.000000e+00                    False   1.000000e+00              False
+       has_hypertension 1.000000e+00  1.000000e+00                    False   1.000000e+00              False
+
+FINAL RESULT
+                Feature           Test Metric Type Metric      p-value Significance
+       ckd_years_so_far Mann-Whitney U Effect Size -0.521 0.000000e+00         High
+          takes_insulin Fisher's Exact  Odds Ratio   2.52 8.354992e-16         High
+          diabetic_year Mann-Whitney U Effect Size -0.244 2.763888e-15         High
+           age_in_years Mann-Whitney U Effect Size -0.167 6.467183e-08         High
+      urinary_infection Fisher's Exact  Odds Ratio  1.785 7.958082e-07         High
+      comorbidity_score Mann-Whitney U Effect Size -0.142 1.363880e-06         High
+       BMI_in_kg_per_m2 Mann-Whitney U Effect Size -0.148 1.836385e-06         High
+ calorie_intake_per_day Mann-Whitney U Effect Size -0.128 2.620383e-05         High
+          weight_change Mann-Whitney U Effect Size  0.125 3.836026e-05         High
+        lifestyle_score Mann-Whitney U Effect Size -0.123 4.058052e-05         High
+             bmi_change Mann-Whitney U Effect Size  0.126 4.080680e-05         High
+         walk_regularly Fisher's Exact  Odds Ratio    1.6 5.982930e-05         High
+           weight_in_kg Mann-Whitney U Effect Size -0.098 1.556608e-03          Mid
+      has_heart_disease Fisher's Exact  Odds Ratio  1.439 2.463826e-03          Mid
+       proper_urination Fisher's Exact  Odds Ratio  0.667 4.049456e-03          Mid
+      takes_pain_killer Fisher's Exact  Odds Ratio  1.365 6.773795e-03          Mid
+family_diabetic_history Fisher's Exact  Odds Ratio  0.796 3.948224e-02          Low
+           height_in_cm Mann-Whitney U Effect Size  0.062 4.466448e-02          Low
+          smoking_habit Fisher's Exact  Odds Ratio  1.319 6.096953e-02           NS
+          takes_tobacco Fisher's Exact  Odds Ratio  0.856 2.391048e-01           NS
+       sufficient_sleep Fisher's Exact  Odds Ratio  0.914 4.148666e-01           NS
+takes_diabetes_medicine Fisher's Exact  Odds Ratio  0.946 6.649518e-01           NS
+        diet_regulation Fisher's Exact  Odds Ratio  1.021 8.991010e-01           NS
+                 gender Fisher's Exact  Odds Ratio  0.989 9.556000e-01           NS
+       has_hypertension Fisher's Exact  Odds Ratio  1.001 1.000000e+00           NS
+
+Output of trajectory_analysis.py:
+Feature columns (29): ['gender', 'job', 'family_diabetic_history', 'height_in_cm', 'diabetic_year', 'age_in_years', 'weight_in_kg', 'BMI_in_kg_per_m2', 'diet_regulation', 'takes_diabetes_medicine', 'takes_insulin', 'has_hypertension', 'has_heart_disease', 'sufficient_sleep', 'sufficient_water_consumption', 'smoking_habit', 'takes_tobacco', 'walk_regularly', 'proper_urination', 'urinary_infection', 'takes_pain_killer', 'calorie_intake_per_day', 'CKD', 'bmi_change', 'weight_change', 'comorbidity_score', 'lifestyle_score', 'risk_behaviour', 'ckd_years_so_far']
+Building sliding windows...
+  All windows  — Train (1400, 145)  Val (300, 145)  Test (300, 145)
+  Pre-onset    — Train (1257, 145)  Val (275, 145)  Test (277, 145)
+Building trajectory feature sets (augmented + replace)...
+  Raw features       : 145
+  Trajectory features: 24
+  Augmented total    : 169
+  Replace total      : 24
+  Trajectory feature names: ['weight_in_kg_slope', 'BMI_in_kg_per_m2_slope', 'comorbidity_score_slope', 'lifestyle_score_slope', 'weight_in_kg_std', 'BMI_in_kg_per_m2_std', 'comorbidity_score_std', 'lifestyle_score_std', 'weight_in_kg_accel', 'BMI_in_kg_per_m2_accel', 'weight_in_kg_recency_wmean', 'weight_in_kg_early_wmean', 'BMI_in_kg_per_m2_recency_wmean', 'BMI_in_kg_per_m2_early_wmean', 'comorbidity_score_recency_wmean', 'comorbidity_score_early_wmean', 'takes_insulin_window_sum', 'urinary_infection_window_sum', 'has_heart_disease_window_sum', 'takes_pain_killer_window_sum', 'takes_insulin_first_occur', 'urinary_infection_first_occur', 'has_heart_disease_first_occur', 'takes_pain_killer_first_occur']
+Scaling features...
+Applying SMOTE...
+  Before SMOTE — CKD=0: 1144  CKD=1: 256
+   After SMOTE — CKD=0: 1144  CKD=1: 1144
+  Before SMOTE — CKD=0: 1144  CKD=1: 113
+   After SMOTE — CKD=0: 1144  CKD=1: 1144
+  Before SMOTE — CKD=0: 1144  CKD=1: 256
+   After SMOTE — CKD=0: 1144  CKD=1: 1144
+  Before SMOTE — CKD=0: 1144  CKD=1: 113
+   After SMOTE — CKD=0: 1144  CKD=1: 1144
+══════ Random Forest — Augmented ══════
+All Windows...
+Fitting 3 folds for each of 30 candidates, totalling 90 fits
+  Best RF params : {'n_estimators': 300, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'log2', 'max_depth': None, 'class_weight': {0: 1, 1: 3}}
+  Best CV AUC    : 0.9621
+Random Forest  |  All Windows (Augmented)
+  Optimal threshold (Youden's J): 0.232
+              precision    recall  f1-score   support
+
+      No CKD       0.96      0.62      0.75       252
+         CKD       0.30      0.85      0.45        48
+
+    accuracy                           0.66       300
+   macro avg       0.63      0.74      0.60       300
+weighted avg       0.85      0.66      0.71       300
+  ROC-AUC : 0.8547
+  PR-AUC  : 0.6976
+  TN=157  FP=95
+  FN=7  TP=41
+
+Pre-onset Only...
+Fitting 3 folds for each of 30 candidates, totalling 90 fits
+  Best RF params : {'n_estimators': 300, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'log2', 'max_depth': None, 'class_weight': 'balanced'}
+  Best CV AUC    : 0.9703
+Random Forest  |  Pre-onset Only (Augmented)
+  Optimal threshold (Youden's J): 0.199
+              precision    recall  f1-score   support
+
+      No CKD       0.95      0.56      0.70       252
+         CKD       0.14      0.72      0.23        25
+
+    accuracy                           0.57       277
+   macro avg       0.55      0.64      0.47       277
+weighted avg       0.88      0.57      0.66       277
+  ROC-AUC : 0.7214
+  PR-AUC  : 0.2186
+  TN=140  FP=112
+  FN=7  TP=18
+
+Top 20 RF (Augmented) — All Windows:
+CKD_t0                            0.069453
+ckd_years_so_far_t0               0.032951
+CKD_t-1                           0.030769
+weight_in_kg_std                  0.016860
+calorie_intake_per_day_t-1        0.016232
+calorie_intake_per_day_t-2        0.016027
+BMI_in_kg_per_m2_std              0.015808
+calorie_intake_per_day_t-3        0.013948
+calorie_intake_per_day_t0         0.013684
+CKD_t-2                           0.013370
+diabetic_year_t-1                 0.013112
+calorie_intake_per_day_t-4        0.012982
+ckd_years_so_far_t-1              0.012946
+BMI_in_kg_per_m2_early_wmean      0.012363
+BMI_in_kg_per_m2_recency_wmean    0.011718
+diabetic_year_t-4                 0.011680
+diabetic_year_t-3                 0.011600
+BMI_in_kg_per_m2_t-2              0.011381
+weight_in_kg_recency_wmean        0.010779
+diabetic_year_t-2                 0.010524
+
+Top 20 RF (Augmented) — Pre-onset Only:
+diabetic_year_t-3             0.022384
+diabetic_year_t0              0.021434
+takes_insulin_t0              0.020786
+diabetic_year_t-1             0.019244
+calorie_intake_per_day_t-3    0.018579
+diabetic_year_t-4             0.018471
+calorie_intake_per_day_t-2    0.017436
+calorie_intake_per_day_t-1    0.017103
+calorie_intake_per_day_t0     0.016968
+takes_insulin_window_sum      0.016929
+diabetic_year_t-2             0.016852
+calorie_intake_per_day_t-4    0.016762
+takes_insulin_t-2             0.015923
+takes_insulin_first_occur     0.015466
+takes_insulin_t-1             0.014760
+weight_in_kg_std              0.014448
+weight_change_t0              0.013510
+bmi_change_t0                 0.013466
+takes_insulin_t-3             0.013359
+BMI_in_kg_per_m2_std          0.011900
+
+
+══════ Random Forest — Replace ══════
+All Windows...
+Fitting 3 folds for each of 30 candidates, totalling 90 fits
+  Best RF params : {'n_estimators': 300, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'sqrt', 'max_depth': None, 'class_weight': {0: 1, 1: 3}}
+  Best CV AUC    : 0.9234
+Random Forest  |  All Windows (Replace)
+  Optimal threshold (Youden's J): 0.141
+              precision    recall  f1-score   support
+
+      No CKD       0.95      0.23      0.37       252
+         CKD       0.19      0.94      0.31        48
+
+    accuracy                           0.34       300
+   macro avg       0.57      0.58      0.34       300
+weighted avg       0.83      0.34      0.36       300
+  ROC-AUC : 0.6930
+  PR-AUC  : 0.2696
+  TN=57  FP=195
+  FN=3  TP=45
+Pre-onset Only...
+Fitting 3 folds for each of 30 candidates, totalling 90 fits
+  Best RF params : {'n_estimators': 300, 'min_samples_split': 5, 'min_samples_leaf': 1, 'max_features': 'sqrt', 'max_depth': 30, 'class_weight': {0: 1, 1: 5}}
+  Best CV AUC    : 0.9563
+Random Forest  |  Pre-onset Only (Replace)
+  Optimal threshold (Youden's J): 0.128
+              precision    recall  f1-score   support
+
+      No CKD       0.96      0.38      0.55       252
+         CKD       0.12      0.84      0.21        25
+
+    accuracy                           0.43       277
+   macro avg       0.54      0.61      0.38       277
+weighted avg       0.88      0.43      0.52       277
+
+  ROC-AUC : 0.7359
+  PR-AUC  : 0.1853
+  TN=97  FP=155
+  FN=4  TP=21
+
+Top 20 RF (Replace) — All Windows:
+BMI_in_kg_per_m2_recency_wmean     0.083483
+weight_in_kg_early_wmean           0.081163
+weight_in_kg_std                   0.080176
+BMI_in_kg_per_m2_early_wmean       0.080161
+weight_in_kg_recency_wmean         0.079345
+BMI_in_kg_per_m2_std               0.074262
+BMI_in_kg_per_m2_slope             0.063659
+weight_in_kg_slope                 0.058257
+BMI_in_kg_per_m2_accel             0.051742
+weight_in_kg_accel                 0.050003
+comorbidity_score_early_wmean      0.036170
+comorbidity_score_recency_wmean    0.035869
+lifestyle_score_std                0.034309
+takes_insulin_first_occur          0.033171
+takes_insulin_window_sum           0.032922
+lifestyle_score_slope              0.019985
+comorbidity_score_std              0.018220
+urinary_infection_first_occur      0.014701
+urinary_infection_window_sum       0.013549
+has_heart_disease_window_sum       0.012980
+
+Top 20 RF (Replace) — Pre-onset Only:
+weight_in_kg_std                   0.073495
+BMI_in_kg_per_m2_recency_wmean     0.069846
+BMI_in_kg_per_m2_std               0.066793
+BMI_in_kg_per_m2_accel             0.066392
+weight_in_kg_accel                 0.063695
+BMI_in_kg_per_m2_slope             0.062800
+BMI_in_kg_per_m2_early_wmean       0.062387
+weight_in_kg_slope                 0.060010
+weight_in_kg_early_wmean           0.056108
+weight_in_kg_recency_wmean         0.054786
+takes_insulin_first_occur          0.052276
+takes_insulin_window_sum           0.051402
+comorbidity_score_early_wmean      0.043576
+comorbidity_score_recency_wmean    0.042504
+lifestyle_score_std                0.039268
+lifestyle_score_slope              0.029510
+comorbidity_score_std              0.015775
+has_heart_disease_window_sum       0.015733
+has_heart_disease_first_occur      0.014839
+comorbidity_score_slope            0.013132
+
+
+══════ XGBoost — Augmented (pos_weight) ══════
+  XGBoost | pos_weight | All Windows (Augmented)
+Fitting 3 folds for each of 30 candidates, totalling 90 fits
+  Best XGB params: {'subsample': 0.6, 'reg_lambda': 10.0, 'reg_alpha': 0.1, 'n_estimators': 300, 'min_child_weight': 5, 'max_depth': 4, 'learning_rate': 0.01, 'gamma': 0.3, 'colsample_bytree': 1.0}
+  Best CV AUC    : 0.8527
+XGBoost (pos_weight)  |  All Windows (Augmented)
+  Optimal threshold (Youden's J): 0.499
+              precision    recall  f1-score   support
+
+      No CKD       0.92      0.94      0.93       252
+         CKD       0.67      0.58      0.62        48
+
+    accuracy                           0.89       300
+   macro avg       0.79      0.76      0.78       300
+weighted avg       0.88      0.89      0.88       300
+  ROC-AUC : 0.8773
+  PR-AUC  : 0.7326
+  TN=238  FP=14
+  FN=20  TP=28
+
+  XGBoost | pos_weight | Pre-onset Only (Augmented)
+Fitting 3 folds for each of 30 candidates, totalling 90 fits
+  Best XGB params: {'subsample': 0.6, 'reg_lambda': 10.0, 'reg_alpha': 0.1, 'n_estimators': 300, 'min_child_weight': 5, 'max_depth': 4, 'learning_rate': 0.01, 'gamma': 0.3, 'colsample_bytree': 1.0}
+  Best CV AUC    : 0.6066
+XGBoost (pos_weight)  |  Pre-onset Only (Augmented)
+  Optimal threshold (Youden's J): 0.272
+              precision    recall  f1-score   support
+
+      No CKD       0.98      0.46      0.62       252
+         CKD       0.14      0.92      0.25        25
+
+    accuracy                           0.50       277
+   macro avg       0.56      0.69      0.44       277
+weighted avg       0.91      0.50      0.59       277
+  ROC-AUC : 0.7433
+  PR-AUC  : 0.2989
+  TN=115  FP=137
+  FN=2  TP=23
+
+══════ XGBoost — Augmented (SMOTE) ══════
+
+  XGBoost | SMOTE | All Windows (Augmented)
+Fitting 3 folds for each of 30 candidates, totalling 90 fits
+  Best XGB params: {'subsample': 0.6, 'reg_lambda': 5.0, 'reg_alpha': 0, 'n_estimators': 200, 'min_child_weight': 1, 'max_depth': 6, 'learning_rate': 0.1, 'gamma': 0, 'colsample_bytree': 0.6}
+  Best CV AUC    : 0.9714
+XGBoost (SMOTE)  |  All Windows (Augmented)
+  Optimal threshold (Youden's J): 0.437
+              precision    recall  f1-score   support
+
+      No CKD       0.92      0.99      0.95       252
+         CKD       0.93      0.52      0.67        48
+
+    accuracy                           0.92       300
+   macro avg       0.92      0.76      0.81       300
+weighted avg       0.92      0.92      0.91       300
+  ROC-AUC : 0.8431
+  PR-AUC  : 0.7048
+  TN=250  FP=2
+  FN=23  TP=25
+
+  XGBoost | SMOTE | Pre-onset Only (Augmented)
+Fitting 3 folds for each of 30 candidates, totalling 90 fits
+  Best XGB params: {'subsample': 0.6, 'reg_lambda': 5.0, 'reg_alpha': 0, 'n_estimators': 200, 'min_child_weight': 1, 'max_depth': 6, 'learning_rate': 0.1, 'gamma': 0, 'colsample_bytree': 0.6}
+  Best CV AUC    : 0.9790
+
+XGBoost (SMOTE)  |  Pre-onset Only (Augmented)
+  Optimal threshold (Youden's J): 0.035
+              precision    recall  f1-score   support
+
+      No CKD       0.96      0.56      0.70       252
+         CKD       0.15      0.76      0.24        25
+
+    accuracy                           0.57       277
+   macro avg       0.55      0.66      0.47       277
+weighted avg       0.89      0.57      0.66       277
+
+  ROC-AUC : 0.7057
+  PR-AUC  : 0.1861
+  TN=140  FP=112
+  FN=6  TP=19
+
+
+══════ XGBoost — Replace (pos_weight) ══════
+
+  XGBoost | pos_weight | All Windows (Replace)
+Fitting 3 folds for each of 30 candidates, totalling 90 fits
+  Best XGB params: {'subsample': 0.6, 'reg_lambda': 10.0, 'reg_alpha': 0.1, 'n_estimators': 300, 'min_child_weight': 5, 'max_depth': 4, 'learning_rate': 0.01, 'gamma': 0.3, 'colsample_bytree': 1.0}
+  Best CV AUC    : 0.5284
+
+XGBoost (pos_weight)  |  All Windows (Replace)
+  Optimal threshold (Youden's J): 0.569
+              precision    recall  f1-score   support
+
+      No CKD       0.89      0.84      0.86       252
+         CKD       0.34      0.44      0.38        48
+
+    accuracy                           0.77       300
+   macro avg       0.61      0.64      0.62       300
+weighted avg       0.80      0.77      0.78       300
+
+  ROC-AUC : 0.7712
+  PR-AUC  : 0.3385
+  TN=211  FP=41
+  FN=27  TP=21
+
+  XGBoost | pos_weight | Pre-onset Only (Replace)
+Fitting 3 folds for each of 30 candidates, totalling 90 fits
+  Best XGB params: {'subsample': 0.6, 'reg_lambda': 10.0, 'reg_alpha': 0.1, 'n_estimators': 300, 'min_child_weight': 5, 'max_depth': 4, 'learning_rate': 0.01, 'gamma': 0.3, 'colsample_bytree': 1.0}
+  Best CV AUC    : 0.5754
+
+XGBoost (pos_weight)  |  Pre-onset Only (Replace)
+  Optimal threshold (Youden's J): 0.420
+              precision    recall  f1-score   support
+
+      No CKD       0.97      0.65      0.78       252
+         CKD       0.19      0.80      0.30        25
+
+    accuracy                           0.67       277
+   macro avg       0.58      0.73      0.54       277
+weighted avg       0.90      0.67      0.74       277
+
+  ROC-AUC : 0.7630
+  PR-AUC  : 0.1983
+  TN=165  FP=87
+  FN=5  TP=20
+
+
+══════ XGBoost — Replace (SMOTE) ══════
+
+  XGBoost | SMOTE | All Windows (Replace)
+Fitting 3 folds for each of 30 candidates, totalling 90 fits
+  Best XGB params: {'subsample': 1.0, 'reg_lambda': 1.0, 'reg_alpha': 1.0, 'n_estimators': 500, 'min_child_weight': 1, 'max_depth': 8, 'learning_rate': 0.1, 'gamma': 0, 'colsample_bytree': 0.6}
+  Best CV AUC    : 0.9124
+
+XGBoost (SMOTE)  |  All Windows (Replace)
+  Optimal threshold (Youden's J): 0.085
+              precision    recall  f1-score   support
+
+      No CKD       0.92      0.58      0.71       252
+         CKD       0.25      0.75      0.38        48
+
+    accuracy                           0.60       300
+   macro avg       0.59      0.66      0.54       300
+weighted avg       0.82      0.60      0.66       300
+
+  ROC-AUC : 0.7181
+  PR-AUC  : 0.3167
+  TN=145  FP=107
+  FN=12  TP=36
+
+  XGBoost | SMOTE | Pre-onset Only (Replace)
+Fitting 3 folds for each of 30 candidates, totalling 90 fits
+  Best XGB params: {'subsample': 1.0, 'reg_lambda': 1.0, 'reg_alpha': 1.0, 'n_estimators': 500, 'min_child_weight': 1, 'max_depth': 8, 'learning_rate': 0.1, 'gamma': 0, 'colsample_bytree': 0.6}
+  Best CV AUC    : 0.9511
+
+XGBoost (SMOTE)  |  Pre-onset Only (Replace)
+  Optimal threshold (Youden's J): 0.048
+              precision    recall  f1-score   support
+
+      No CKD       0.96      0.62      0.76       252
+         CKD       0.17      0.76      0.27        25
+
+    accuracy                           0.64       277
+   macro avg       0.56      0.69      0.52       277
+weighted avg       0.89      0.64      0.71       277
+
+  ROC-AUC : 0.7279
+  PR-AUC  : 0.1956
+  TN=157  FP=95
+  FN=6  TP=19
+
+Top 20 XGBoost (Augmented, pos_weight) — All Windows:
+CKD_t0                          0.085343
+urinary_infection_window_sum    0.019541
+proper_urination_t-2            0.017714
+proper_urination_t-1            0.016632
+urinary_infection_t-2           0.016511
+diabetic_year_t-4               0.015904
+urinary_infection_t-1           0.015340
+has_heart_disease_t0            0.015308
+weight_change_t-2               0.015235
+takes_insulin_t-1               0.014266
+diet_regulation_t-2             0.013213
+comorbidity_score_t-1           0.013070
+BMI_in_kg_per_m2_accel          0.013021
+BMI_in_kg_per_m2_early_wmean    0.012668
+takes_pain_killer_t-4           0.012440
+takes_insulin_window_sum        0.012213
+diet_regulation_t-3             0.012211
+comorbidity_score_t0            0.012176
+walk_regularly_t0               0.012175
+diet_regulation_t-4             0.012101
+
+Top 20 XGBoost (Augmented, pos_weight) — Pre-onset Only:
+urinary_infection_t-1              0.021417
+urinary_infection_window_sum       0.017380
+diabetic_year_t-4                  0.016633
+takes_insulin_t-1                  0.016440
+proper_urination_t-2               0.015605
+BMI_in_kg_per_m2_early_wmean       0.014798
+takes_insulin_window_sum           0.014341
+has_heart_disease_t0               0.014259
+comorbidity_score_t-3              0.013616
+takes_pain_killer_t-1              0.013414
+takes_insulin_first_occur          0.013232
+takes_pain_killer_t-2              0.013207
+comorbidity_score_recency_wmean    0.012935
+comorbidity_score_t-1              0.012776
+comorbidity_score_early_wmean      0.012451
+takes_insulin_t-2                  0.012415
+BMI_in_kg_per_m2_std               0.012340
+BMI_in_kg_per_m2_accel             0.011898
+takes_insulin_t0                   0.011635
+has_heart_disease_t-4              0.011425
+
+Top 20 XGBoost (Replace, pos_weight) — All Windows:
+weight_in_kg_std                   0.060472
+takes_pain_killer_window_sum       0.058262
+takes_insulin_window_sum           0.057400
+BMI_in_kg_per_m2_std               0.056407
+BMI_in_kg_per_m2_early_wmean       0.055889
+takes_insulin_first_occur          0.051280
+urinary_infection_window_sum       0.050631
+has_heart_disease_window_sum       0.047548
+BMI_in_kg_per_m2_recency_wmean     0.047272
+weight_in_kg_early_wmean           0.046972
+BMI_in_kg_per_m2_slope             0.046720
+lifestyle_score_std                0.045769
+comorbidity_score_slope            0.044933
+comorbidity_score_early_wmean      0.041688
+BMI_in_kg_per_m2_accel             0.040793
+weight_in_kg_recency_wmean         0.040670
+comorbidity_score_recency_wmean    0.040200
+comorbidity_score_std              0.037510
+takes_pain_killer_first_occur      0.034725
+lifestyle_score_slope              0.033801
+
+Top 20 XGBoost (Replace, pos_weight) — Pre-onset Only:
+has_heart_disease_window_sum       0.066913
+urinary_infection_window_sum       0.065922
+takes_insulin_window_sum           0.062736
+comorbidity_score_slope            0.056394
+comorbidity_score_recency_wmean    0.052199
+takes_insulin_first_occur          0.050771
+comorbidity_score_early_wmean      0.049355
+BMI_in_kg_per_m2_accel             0.049318
+BMI_in_kg_per_m2_std               0.048853
+weight_in_kg_early_wmean           0.046871
+BMI_in_kg_per_m2_early_wmean       0.044076
+lifestyle_score_std                0.043223
+weight_in_kg_accel                 0.041582
+weight_in_kg_recency_wmean         0.041491
+BMI_in_kg_per_m2_slope             0.040787
+lifestyle_score_slope              0.039262
+BMI_in_kg_per_m2_recency_wmean     0.037669
+takes_pain_killer_window_sum       0.037321
+weight_in_kg_std                   0.035337
+takes_pain_killer_first_occur      0.034036
+
+
+══════ Summary of All Results ══════
+
+RF — Augmented Results:
+        Model                 Experiment  ROC-AUC  PR-AUC  F1 (CKD)  Recall (CKD)  Threshold
+Random Forest    All Windows (Augmented)   0.8547  0.6976    0.4457        0.8542      0.232
+Random Forest Pre-onset Only (Augmented)   0.7214  0.2186    0.2323        0.7200      0.199
+
+RF — Replace Results:
+        Model               Experiment  ROC-AUC  PR-AUC  F1 (CKD)  Recall (CKD)  Threshold
+Random Forest    All Windows (Replace)   0.6930  0.2696    0.3125        0.9375      0.141
+Random Forest Pre-onset Only (Replace)   0.7359  0.1853    0.2090        0.8400      0.128
+
+XGBoost Augmented pos_wt Results:
+               Model                 Experiment  ROC-AUC  PR-AUC  F1 (CKD)  Recall (CKD)  Threshold
+XGBoost (pos_weight)    All Windows (Augmented)   0.8773  0.7326    0.6222        0.5833      0.499
+XGBoost (pos_weight) Pre-onset Only (Augmented)   0.7433  0.2989    0.2486        0.9200      0.272
+
+XGBoost Augmented SMOTE Results:
+          Model                 Experiment  ROC-AUC  PR-AUC  F1 (CKD)  Recall (CKD)  Threshold
+XGBoost (SMOTE)    All Windows (Augmented)   0.8431  0.7048    0.6667        0.5208      0.437
+XGBoost (SMOTE) Pre-onset Only (Augmented)   0.7057  0.1861    0.2436        0.7600      0.035
+
+XGBoost Replace pos_wt Results:
+               Model               Experiment  ROC-AUC  PR-AUC  F1 (CKD)  Recall (CKD)  Threshold
+XGBoost (pos_weight)    All Windows (Replace)   0.7712  0.3385    0.3818        0.4375      0.569
+XGBoost (pos_weight) Pre-onset Only (Replace)   0.7630  0.1983    0.3030        0.8000      0.420
+
+XGBoost Replace SMOTE Results:
+          Model               Experiment  ROC-AUC  PR-AUC  F1 (CKD)  Recall (CKD)  Threshold
+XGBoost (SMOTE)    All Windows (Replace)   0.7181  0.3167    0.3770          0.75      0.085
+XGBoost (SMOTE) Pre-onset Only (Replace)   0.7279  0.1956    0.2734          0.76      0.048
+
+
+══════ SHAP Analysis ══════
+
+Computing SHAP values for XGBoost Augmented All Windows...
+  Top 20 SHAP features (XGBoost Augmented All Windows):
+CKD_t0                             0.950011
+diabetic_year_t-4                  0.278013
+BMI_in_kg_per_m2_std               0.110106
+calorie_intake_per_day_t-4         0.101867
+bmi_change_t0                      0.095495
+BMI_in_kg_per_m2_accel             0.079751
+bmi_change_t-4                     0.072456
+takes_insulin_t-1                  0.070572
+BMI_in_kg_per_m2_t-4               0.053123
+takes_insulin_window_sum           0.037523
+bmi_change_t-3                     0.036088
+age_in_years_t-4                   0.031765
+BMI_in_kg_per_m2_slope             0.030682
+comorbidity_score_recency_wmean    0.029593
+has_heart_disease_t0               0.029099
+BMI_in_kg_per_m2_t-2               0.026527
+bmi_change_t-2                     0.024780
+comorbidity_score_t-1              0.024490
+weight_in_kg_std                   0.024137
+proper_urination_t-1               0.024017
+
+  Mean |SHAP| — raw timestep features   : 0.0147
+  Mean |SHAP| — trajectory features     : 0.0184
+
+Computing SHAP values for XGBoost Augmented Pre-onset...
+  Top 20 SHAP features (XGBoost Augmented Pre-onset):
+diabetic_year_t-4                  0.386565
+BMI_in_kg_per_m2_std               0.200820
+calorie_intake_per_day_t-4         0.158540
+bmi_change_t0                      0.155289
+bmi_change_t-4                     0.102480
+BMI_in_kg_per_m2_accel             0.088316
+takes_insulin_t-1                  0.077169
+bmi_change_t-3                     0.059137
+takes_insulin_window_sum           0.058207
+comorbidity_score_recency_wmean    0.052365
+age_in_years_t-4                   0.051553
+comorbidity_score_t-1              0.051254
+bmi_change_t-1                     0.049673
+BMI_in_kg_per_m2_t-1               0.047442
+BMI_in_kg_per_m2_slope             0.046905
+BMI_in_kg_per_m2_t-4               0.046860
+BMI_in_kg_per_m2_t-2               0.041547
+has_hypertension_t-3               0.041286
+weight_in_kg_std                   0.039924
+takes_insulin_t0                   0.032396
+
+  Mean |SHAP| — raw timestep features   : 0.0123
+  Mean |SHAP| — trajectory features     : 0.0281
+
+Computing SHAP values for XGBoost Replace All Windows...
+  Top 20 SHAP features (XGBoost Replace All Windows):
+BMI_in_kg_per_m2_std               0.193483
+takes_insulin_window_sum           0.164262
+BMI_in_kg_per_m2_early_wmean       0.137287
+BMI_in_kg_per_m2_slope             0.135675
+weight_in_kg_std                   0.116155
+BMI_in_kg_per_m2_accel             0.115993
+weight_in_kg_early_wmean           0.087595
+urinary_infection_window_sum       0.081713
+BMI_in_kg_per_m2_recency_wmean     0.078982
+lifestyle_score_std                0.057114
+comorbidity_score_recency_wmean    0.053387
+weight_in_kg_recency_wmean         0.051590
+has_heart_disease_window_sum       0.043829
+takes_pain_killer_window_sum       0.032140
+comorbidity_score_early_wmean      0.025535
+takes_insulin_first_occur          0.021609
+comorbidity_score_std              0.014823
+weight_in_kg_accel                 0.014717
+lifestyle_score_slope              0.011158
+weight_in_kg_slope                 0.010197
+
+  Mean |SHAP| — raw timestep features   : nan
+  Mean |SHAP| — trajectory features     : 0.0607
+
+Computing SHAP values for XGBoost Replace Pre-onset...
+  Top 20 SHAP features (XGBoost Replace Pre-onset):
+BMI_in_kg_per_m2_std               0.250769
+takes_insulin_window_sum           0.245787
+BMI_in_kg_per_m2_accel             0.205634
+weight_in_kg_early_wmean           0.122014
+comorbidity_score_recency_wmean    0.115962
+has_heart_disease_window_sum       0.104978
+BMI_in_kg_per_m2_slope             0.104617
+weight_in_kg_recency_wmean         0.104382
+urinary_infection_window_sum       0.083933
+BMI_in_kg_per_m2_recency_wmean     0.068838
+weight_in_kg_std                   0.060305
+BMI_in_kg_per_m2_early_wmean       0.059856
+takes_insulin_first_occur          0.049757
+comorbidity_score_early_wmean      0.046055
+weight_in_kg_accel                 0.039563
+lifestyle_score_std                0.032866
+comorbidity_score_slope            0.028812
+lifestyle_score_slope              0.024149
+weight_in_kg_slope                 0.020371
+takes_pain_killer_window_sum       0.020034
+
+  Mean |SHAP| — raw timestep features   : nan
+  Mean |SHAP| — trajectory features     : 0.0748
+
+  SHAP by timestep (XGBoost Augmented All Windows):
+    t-4  0.021610
+    t-3  0.003709
+    t-2  0.003257
+    t-1  0.006098
+    t0  0.039072
+
+  SHAP by timestep (XGBoost Augmented Pre-onset):
+    t-4  0.030670
+    t-3  0.005899
+    t-2  0.005327
+    t-1  0.010640
+    t0  0.009069
+
+Output of causal_analysis.py:
+
+Loading dataset...
+Full dataset: 4000 rows | 400 patients
+
+Building patient-level pre-onset summary...
+Patient summary: 400 patients | CKD=1: 185 | CKD=0: 215
+
+Binarising exposures...
+Loading dataset...
+Full dataset: 4000 rows | 400 patients
+
+Building patient-level pre-onset summary...
+Patient summary: 400 patients | CKD=1: 185 | CKD=0: 215
+
+Binarising exposures...
+
+Exposure distributions:
+  insulin_high: 215 exposed (53.8%) | CKD rate exposed: 0.516 | unexposed: 0.400
+  weight_gaining: 228 exposed (57.0%) | CKD rate exposed: 0.500 | unexposed: 0.413
+  long_diabetes: 323 exposed (80.8%) | CKD rate exposed: 0.334 | unexposed: 1.000
+  bmi_high: 7 exposed (1.8%) | CKD rate exposed: 1.000 | unexposed: 0.453
+
+Running causal analysis...
+
+══════════════════════════════════════════════════
+Exposure: insulin_high
+══════════════════════════════════════════════════
+
+  Identified estimand:
+Estimand type: nonparametric-ate
+
+### Estimand : 1
+Estimand name: backdoor
+Estimand expression:
+       d                                                                       ↪
+───────────────(E[ckd_ever|calorie_intake_per_day,gender,age_in_years,family_d ↪
+d[insulin_high]                                                                ↪
+
+↪                                                      
+↪ iabetic_history,BMI_in_kg_per_m2,diabetic_year_mean])
+↪                                                      
+Estimand assumption 1, Unconfoundedness: If U→{insulin_high} and U→ckd_ever then P(ckd_ever|insulin_high,calorie_intake_per_day,gender,age_in_years,family_diabetic_history,BMI_in_kg_per_m2,diabetic_year_mean,U) = P(ckd_ever|insulin_high,calorie_intake_per_day,gender,age_in_years,family_diabetic_history,BMI_in_kg_per_m2,diabetic_year_mean)
+
+### Estimand : 2
+Estimand name: iv
+No such variable(s) found!
+
+### Estimand : 3
+Estimand name: frontdoor
+No such variable(s) found!
+
+propensity_score_matching
+  PSM   ATE: 0.1325
+  LR    ATE: 0.1239
+propensity_score_weighting
+  IPW   ATE: 0.1215
+  Mean ATE across methods: 0.1260
+propensity_score_matching
+
+  Refutation results:
+    Random common cause : 0.1080  (should approx original)
+    Placebo treatment   : 0.0051  (should approx 0)
+    Data subset         : 0.1165  (should approx original)
+    Robust: True
+
+══════════════════════════════════════════════════
+Exposure: weight_gaining
+══════════════════════════════════════════════════
+
+  Identified estimand:
+Estimand type: nonparametric-ate
+
+### Estimand : 1
+Estimand name: backdoor
+Estimand expression:
+        d                                                                      ↪
+─────────────────(E[ckd_ever|calorie_intake_per_day,gender,age_in_years,family ↪
+d[weight_gaining]                                                              ↪
+
+↪                                       
+↪ _diabetic_history,diabetic_year_mean])
+↪                                       
+Estimand assumption 1, Unconfoundedness: If U→{weight_gaining} and U→ckd_ever then P(ckd_ever|weight_gaining,calorie_intake_per_day,gender,age_in_years,family_diabetic_history,diabetic_year_mean,U) = P(ckd_ever|weight_gaining,calorie_intake_per_day,gender,age_in_years,family_diabetic_history,diabetic_year_mean)
+
+### Estimand : 2
+Estimand name: iv
+No such variable(s) found!
+
+### Estimand : 3
+Estimand name: frontdoor
+No such variable(s) found!
+
+propensity_score_matching
+  PSM   ATE: 0.0400
+  LR    ATE: 0.0861
+propensity_score_weighting
+  IPW   ATE: 0.0865
+  Mean ATE across methods: 0.0709
+propensity_score_matching
+
+  Refutation results:
+    Random common cause : 0.0823  (should approx original)
+    Placebo treatment   : -0.0027  (should approx 0)
+    Data subset         : 0.0783  (should approx original)
+    Robust: True
+
+══════════════════════════════════════════════════
+Exposure: long_diabetes
+══════════════════════════════════════════════════
+
+  Identified estimand:
+Estimand type: nonparametric-ate
+
+### Estimand : 1
+Estimand name: backdoor
+Estimand expression:
+       d                                                                       ↪
+────────────────(E[ckd_ever|calorie_intake_per_day,gender,age_in_years,family_ ↪
+d[long_diabetes]                                                               ↪
+
+↪                                    
+↪ diabetic_history,BMI_in_kg_per_m2])
+↪                                    
+Estimand assumption 1, Unconfoundedness: If U→{long_diabetes} and U→ckd_ever then P(ckd_ever|long_diabetes,calorie_intake_per_day,gender,age_in_years,family_diabetic_history,BMI_in_kg_per_m2,U) = P(ckd_ever|long_diabetes,calorie_intake_per_day,gender,age_in_years,family_diabetic_history,BMI_in_kg_per_m2)
+
+### Estimand : 2
+Estimand name: iv
+No such variable(s) found!
+
+### Estimand : 3
+Estimand name: frontdoor
+No such variable(s) found!
+
+propensity_score_matching
+  PSM   ATE: -0.6675
+  LR    ATE: -0.6515
+propensity_score_weighting
+  IPW   ATE: -0.6649
+  Mean ATE across methods: -0.6613
+propensity_score_matching
+
+  Refutation results:
+    Random common cause : -0.6667  (should approx original)
+    Placebo treatment   : -0.0014  (should approx 0)
+    Data subset         : -0.6623  (should approx original)
+    Robust: True
+
+══════════════════════════════════════════════════
+Exposure: bmi_high
+══════════════════════════════════════════════════
+
+  Identified estimand:
+Estimand type: nonparametric-ate
+
+### Estimand : 1
+Estimand name: backdoor
+Estimand expression:
+     d                                                                         ↪
+───────────(E[ckd_ever|calorie_intake_per_day,gender,age_in_years,family_diabe ↪
+d[bmi_high]                                                                    ↪
+
+↪                                 
+↪ tic_history,diabetic_year_mean])
+↪                                 
+Estimand assumption 1, Unconfoundedness: If U→{bmi_high} and U→ckd_ever then P(ckd_ever|bmi_high,calorie_intake_per_day,gender,age_in_years,family_diabetic_history,diabetic_year_mean,U) = P(ckd_ever|bmi_high,calorie_intake_per_day,gender,age_in_years,family_diabetic_history,diabetic_year_mean)
+
+### Estimand : 2
+Estimand name: iv
+No such variable(s) found!
+
+### Estimand : 3
+Estimand name: frontdoor
+No such variable(s) found!
+
+propensity_score_matching
+  PSM   ATE: 0.5475
+  LR    ATE: 0.5354
+propensity_score_weighting
+  IPW   ATE: 0.5465
+  Mean ATE across methods: 0.5432
+propensity_score_matching
+
+  Refutation results:
+    Random common cause : 0.5456  (should approx original)
+    Placebo treatment   : -0.0255  (should approx 0)
+    Data subset         : 0.5457  (should approx original)
+    Robust: True
+
+
+══════ Comparison Table ══════
+      Exposure  Spearman ρ  SHAP (pre-onset)  ATE (PSM)  ATE (LR)  ATE (IPW)  Mean ATE  Placebo ATE  Robust
+  insulin_high       0.125             0.230     0.1325    0.1239     0.1215    0.1260       0.0051    True
+weight_gaining      -0.065             0.361     0.0400    0.0861     0.0865    0.0709      -0.0027    True
+ long_diabetes       0.125             0.426    -0.6675   -0.6515    -0.6649   -0.6613      -0.0014    True
+      bmi_high         NaN               NaN     0.5475    0.5354     0.5465    0.5432      -0.0255    True
+
+  Note: long_diabetes ATE flagged — positivity violation (80.8% exposed, unexposed group 100% CKD rate)
+
+Saving visualisations...
+
+Done. Results saved to causal_results/ and plots/causal/
+
+Output of transition_analysis.py:
+Converters: 164
+Stable: 215
+             feature  converter_mean_slope  stable_mean_slope       p_value
+2  comorbidity_score              0.039634           0.010233  3.972598e-08
+4      takes_insulin              0.045122           0.033023  4.377609e-04
+3    lifestyle_score              0.041463           0.008837  1.212964e-01
+0       weight_in_kg              0.159146           0.046512  1.285454e-01
+1   BMI_in_kg_per_m2              0.056991           0.015762  1.504344e-01
+Done.
+
+Output of converter_clustering.py:
+Loading datasets...
+  Total records: 4000  |  Patients: 400
+
+Building patient-level pre-onset summaries...
+  Converters : 184
+  Stable     : 215
+
+Comparing converter vs stable trajectories...
+
+══ Converter vs Stable — Slope Features (Mann-Whitney U) ══
+                     feature  converter_mean  stable_mean  p_value  significant
+          weight_in_kg_slope        0.263807     0.094715 0.000733         True
+      BMI_in_kg_per_m2_slope        0.103623     0.038408 0.001038         True
+       lifestyle_score_slope        0.031548     0.018182 0.014126         True
+     comorbidity_score_slope        0.021493     0.009049 0.052832        False
+calorie_intake_per_day_slope        0.000000     0.000000 1.000000        False
+  Slope comparison chart saved.
+
+Clustering converter group...
+  k=2  silhouette=0.1113
+  k=3  silhouette=0.1055
+  k=4  silhouette=0.1117
+  k=5  silhouette=0.0996
+
+  Best k by silhouette: 4  (score=0.1117)
+
+══ Cluster Size Summary ══
+  Cluster 0: 32 patients (17.4%)
+  Cluster 1: 73 patients (39.7%)
+  Cluster 2: 48 patients (26.1%)
+  Cluster 3: 31 patients (16.8%)
+
+══ Cluster Profiles ══
+cluster                                 0            1            2            3
+weight_in_kg_mean               67.072755    60.495010    62.143436    66.183653
+BMI_in_kg_per_m2_mean           26.695686    24.182094    24.988927    26.657382
+calorie_intake_per_day_mean   1478.125000  1445.205479  1508.333333  1477.419355
+comorbidity_score_mean           1.689484     0.555773     2.383929     0.779122
+lifestyle_score_mean             4.215960     4.258698     3.841601     4.594662
+weight_in_kg_slope               0.012798     0.048663     0.181349     1.157220
+BMI_in_kg_per_m2_slope           0.006456     0.012804     0.071212     0.467975
+calorie_intake_per_day_slope     0.000000     0.000000     0.000000     0.000000
+comorbidity_score_slope          0.008185     0.030463     0.026339     0.006605
+lifestyle_score_slope            0.003051     0.044945     0.034970     0.024117
+takes_insulin_prop               0.607329     0.569363     0.667989     0.652010
+urinary_infection_prop           0.260417     0.150685     0.699074     0.362007
+has_heart_disease_prop           0.177083     0.126332     0.789352     0.103943
+takes_pain_killer_prop           0.328373     0.232877     0.768519     0.205645
+has_hypertension_prop            0.923611     0.045880     0.126984     0.107527
+pre_onset_years                  7.968750     8.164384     8.645833     6.354839
+
+Generating visualisations...
+  Silhouette score plot saved.
+  PCA cluster plot saved.
+  Radar chart saved.
+  Mean trajectory plots saved for: ['weight_in_kg', 'comorbidity_score', 'lifestyle_score', 'calorie_intake_per_day', 'takes_insulin']
+
+Done. Results saved to 'converter_clustering_results/' and 'plots/converter_clustering/'

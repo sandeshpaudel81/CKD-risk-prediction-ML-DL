@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 
 def add_features(df):
+    df['BMI_in_kg_per_m2'] = df['weight_in_kg'] / (df['height_in_cm'] / 100) ** 2
     df = df.copy().sort_values(['patient_id', 'diabetic_year'])
  
     # Yearly change in BMI and weight
