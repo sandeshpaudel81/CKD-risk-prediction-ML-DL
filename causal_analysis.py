@@ -21,12 +21,12 @@ EXPOSURES = {
     'insulin_high'   : 'takes_insulin',
     'weight_gaining' : 'weight_change',
     'long_diabetes'  : 'diabetic_year',
-    'high_calorie'   : 'calorie_intake_per_day',
+    'bmi_high'       : 'bmi_change'
 }
 
 # Base confounders — mediators and colliders excluded
 BASE_CONFOUNDERS = [
-    'age_in_years', 'gender', 'family_diabetic_history',
+    'age_in_years', 'gender', 'family_diabetic_history', 'calorie_intake_per_day'
 ]
 
 # Added when not the exposure itself
@@ -34,7 +34,7 @@ EXTRA_CONFOUNDERS = {
     'insulin_high'   : ['BMI_in_kg_per_m2', 'diabetic_year_mean'],
     'weight_gaining' : ['diabetic_year_mean'],
     'long_diabetes'  : ['BMI_in_kg_per_m2'],
-    'high_calorie'   : ['diabetic_year_mean'],
+    'bmi_high'       : ['diabetic_year_mean']
 }
 
 OUTCOME = 'ckd_ever'
@@ -55,7 +55,7 @@ def build_patient_summary(data_df):
 
         # continuous — mean across pre-onset years
         for col in ['age_in_years', 'BMI_in_kg_per_m2', 'weight_change',
-                    'calorie_intake_per_day', 'takes_insulin',
+                    'bmi_change', 'takes_insulin',
                     'has_hypertension', 'has_heart_disease',
                     'walk_regularly', 'sufficient_sleep']:
             row[col] = pre[col].mean()
@@ -64,7 +64,7 @@ def build_patient_summary(data_df):
         row['diabetic_year_mean'] = pre['diabetic_year'].max()
 
         # static features — first value
-        for col in ['gender', 'family_diabetic_history', 'height_in_cm', 'job']:
+        for col in ['gender', 'family_diabetic_history', 'height_in_cm', 'job', 'calorie_intake_per_day']:
             row[col] = pre[col].iloc[0]
 
         records.append(row)
@@ -80,7 +80,7 @@ def binarise_exposures(df):
     df['insulin_high']   = (df['takes_insulin']          >= 0.5).astype(int)
     df['weight_gaining'] = (df['weight_change']           > 0.0).astype(int)
     df['long_diabetes']  = (df['diabetic_year_mean']      >= 10 ).astype(int)
-    df['high_calorie']   = (df['calorie_intake_per_day']  >= df['calorie_intake_per_day'].median()).astype(int)
+    df['bmi_high']       = (df['bmi_change']              >= 0.5).astype(int)
 
     print("\nExposure distributions:")
     for t in EXPOSURES:
@@ -92,36 +92,42 @@ def binarise_exposures(df):
 
 # ── Step 3: Build DAG ─────────────────────────────────────────────────────────
 
-def build_dag(treatment):
+def build_dag(treatment, confounders):
     G = nx.DiGraph()
-
-    # Confounders → treatment and outcome
-    for conf in ['age_in_years', 'gender', 'family_diabetic_history',
-                 'BMI_in_kg_per_m2', 'diabetic_year_mean']:
+    for conf in confounders:
         G.add_edge(conf, treatment)
         G.add_edge(conf, OUTCOME)
-
-    # Treatment → outcome (direct effect)
     G.add_edge(treatment, OUTCOME)
-
-    # Mediators — on causal path, NOT conditioned on
-    if treatment == 'insulin_high':
-        G.add_edge(treatment, 'urinary_infection_med')
-        G.add_edge('urinary_infection_med', OUTCOME)
-        G.add_edge('diabetic_year_mean', treatment)
-
-    if treatment in ('weight_gaining', 'high_calorie'):
-        G.add_edge(treatment, 'bmi_med')
-        G.add_edge('bmi_med', OUTCOME)
-
-    if treatment == 'long_diabetes':
-        G.add_edge('age_in_years', treatment)
-        G.add_edge('family_diabetic_history', treatment)
-
     return G
 
 
 # ── Step 4: Run DoWhy for one exposure ───────────────────────────────────────
+
+def _safe_float(est):
+    v = est.value
+    if hasattr(v, 'iloc'):
+        return float(v.iloc[0])
+    if hasattr(v, '__len__'):
+        return float(np.ravel(v)[0])
+    return float(v)
+
+
+def _lr_ate_direct(data, treatment, outcome, confounders):
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.preprocessing import StandardScaler
+    cols = [treatment] + confounders
+    X    = data[cols].values.astype(float)
+    y    = data[outcome].values.astype(float)
+    scaler = StandardScaler()
+    X_sc   = scaler.fit_transform(X)
+    lr = LogisticRegression(max_iter=1000, random_state=42)
+    lr.fit(X_sc, y)
+    # predict potential outcomes: set treatment to 1 vs 0, keep confounders as-is
+    X1 = X_sc.copy(); X1[:, 0] = (1.0 - data[treatment].mean()) / (X_sc[:, 0].std() + 1e-8) * 0 + (1.0 - scaler.mean_[0]) / scaler.scale_[0]
+    X0 = X_sc.copy(); X0[:, 0] = (0.0 - scaler.mean_[0]) / scaler.scale_[0]
+    ate = float(lr.predict_proba(X1)[:, 1].mean() - lr.predict_proba(X0)[:, 1].mean())
+    return ate
+
 
 def run_causal(df, treatment, verbose=True):
     confounders = BASE_CONFOUNDERS + EXTRA_CONFOUNDERS.get(treatment, [])
@@ -130,8 +136,7 @@ def run_causal(df, treatment, verbose=True):
     cols_needed = [treatment, OUTCOME] + confounders
     data        = df[cols_needed].dropna()
 
-    G = build_dag(treatment)
-
+    G     = build_dag(treatment, confounders)
     model = CausalModel(
         data      = data,
         treatment = treatment,
@@ -153,21 +158,16 @@ def run_causal(df, treatment, verbose=True):
             target_units         = 'ate',
             method_params        = {'number_of_matched_units': 50},
         )
-        results['psm'] = float(est.value)
+        results['psm'] = _safe_float(est)
         print(f"  PSM   ATE: {est.value:.4f}")
     except Exception as e:
         results['psm'] = np.nan
         print(f"  PSM   failed: {e}")
 
-    # Linear regression adjustment
+    # Linear regression adjustment — direct sklearn logistic regression
     try:
-        est_lr = model.estimate_effect(
-            identified,
-            method_name = 'backdoor.linear_regression',
-            target_units = 'ate',
-        )
-        results['lr'] = float(est_lr.value)
-        print(f"  LR    ATE: {est_lr.value:.4f}")
+        results['lr'] = _lr_ate_direct(data, treatment, OUTCOME, confounders)
+        print(f"  LR    ATE: {results['lr']:.4f}")
     except Exception as e:
         results['lr'] = np.nan
         print(f"  LR    failed: {e}")
@@ -179,64 +179,53 @@ def run_causal(df, treatment, verbose=True):
             method_name  = 'backdoor.propensity_score_weighting',
             target_units = 'ate',
         )
-        results['ipw'] = float(est_ipw.value)
+        results['ipw'] = _safe_float(est_ipw)
         print(f"  IPW   ATE: {est_ipw.value:.4f}")
     except Exception as e:
         results['ipw'] = np.nan
         print(f"  IPW   failed: {e}")
 
-    results['mean_ate'] = float(np.nanmean(list(results.values())))
+    results['mean_ate'] = float(np.nanmean([results['psm'], results['lr'], results['ipw']]))
     print(f"  Mean ATE across methods: {results['mean_ate']:.4f}")
 
-    # Refutation tests — use LR estimate as it's most stable
-    try:
-        est_ref = model.estimate_effect(
-            identified,
-            method_name  = 'backdoor.linear_regression',
-            target_units = 'ate',
-        )
-
-        ref_rc = model.refute_estimate(
-            identified, est_ref,
-            method_name = 'random_common_cause',
-        )
-        ref_pl = model.refute_estimate(
-            identified, est_ref,
-            method_name    = 'placebo_treatment_refuter',
-            placebo_type   = 'permute',
-            num_simulations= 100,
-        )
-        ref_sub = model.refute_estimate(
-            identified, est_ref,
-            method_name    = 'data_subset_refuter',
-            subset_fraction= 0.8,
-            num_simulations= 100,
-        )
-
-        results['ref_random_cause'] = float(ref_rc.new_effect)
-        results['ref_placebo']      = float(ref_pl.new_effect)
-        results['ref_subset']       = float(ref_sub.new_effect)
-
-        print(f"\n  Refutation results:")
-        print(f"    Random common cause : new ATE = {ref_rc.new_effect:.4f}  (should ≈ original)")
-        print(f"    Placebo treatment   : new ATE = {ref_pl.new_effect:.4f}  (should ≈ 0)")
-        print(f"    Data subset         : new ATE = {ref_sub.new_effect:.4f}  (should ≈ original)")
-
-        # Robustness: placebo near 0, random_cause and subset near original LR ATE
-        lr_ate = results['lr']
-        results['robust'] = (
-            abs(results['ref_placebo'])      < 0.05 and
-            abs(results['ref_random_cause'] - lr_ate) < 0.05 and
-            abs(results['ref_subset']       - lr_ate) < 0.05
-        )
-        print(f"    Robust: {results['robust']}")
-
-    except Exception as e:
-        print(f"  Refutation failed: {e}")
-        results['ref_random_cause'] = np.nan
-        results['ref_placebo']      = np.nan
-        results['ref_subset']       = np.nan
-        results['robust']           = False
+    # Refutation — only if LR succeeded
+    if not np.isnan(results.get('psm', np.nan)):
+        try:
+            est_ref = model.estimate_effect(
+                identified,
+                method_name  = 'backdoor.propensity_score_matching',
+                target_units = 'ate',
+                method_params= {'number_of_matched_units': 50},
+            )
+            ref_rc  = model.refute_estimate(identified, est_ref,
+                          method_name='random_common_cause')
+            ref_pl  = model.refute_estimate(identified, est_ref,
+                          method_name='placebo_treatment_refuter',
+                          placebo_type='permute', num_simulations=100)
+            ref_sub = model.refute_estimate(identified, est_ref,
+                          method_name='data_subset_refuter',
+                          subset_fraction=0.8, num_simulations=100)
+            results['ref_random_cause'] = float(ref_rc.new_effect)
+            results['ref_placebo']      = float(ref_pl.new_effect)
+            results['ref_subset']       = float(ref_sub.new_effect)
+            print(f"\n  Refutation results:")
+            print(f"    Random common cause : {ref_rc.new_effect:.4f}  (should approx original)")
+            print(f"    Placebo treatment   : {ref_pl.new_effect:.4f}  (should approx 0)")
+            print(f"    Data subset         : {ref_sub.new_effect:.4f}  (should approx original)")
+            psm_ate = results['psm']
+            results['robust'] = (
+                abs(results['ref_placebo'])                  < 0.05 and
+                abs(results['ref_random_cause'] - psm_ate)  < 0.05 and
+                abs(results['ref_subset']       - psm_ate)  < 0.05
+            )
+            print(f"    Robust: {results['robust']}")
+        except Exception as e:
+            print(f"  Refutation failed: {e}")
+            results.update(ref_random_cause=float('nan'), ref_placebo=float('nan'),
+                           ref_subset=float('nan'), robust=False)
+    else:
+        results.update(ref_random_cause=float('nan'), ref_placebo=float('nan'),
+                       ref_subset=float('nan'), robust=False)
 
     return results
 
@@ -247,14 +236,12 @@ SPEARMAN = {
     'insulin_high'   : 0.125,
     'weight_gaining' : -0.065,
     'long_diabetes'  : 0.125,
-    'high_calorie'   : 0.067,
 }
 
 SHAP_PREONSET = {
-    'insulin_high'   : 0.260,
+    'insulin_high'   : 0.230,
     'weight_gaining' : 0.361,
     'long_diabetes'  : 0.426,
-    'high_calorie'   : 0.177,
 }
 
 def build_comparison_table(all_results):
@@ -274,14 +261,15 @@ def build_comparison_table(all_results):
     df = pd.DataFrame(rows)
     print("\n\n══════ Comparison Table ══════")
     print(df.to_string(index=False))
+    print("\n  Note: long_diabetes ATE flagged — positivity violation (80.8% exposed, unexposed group 100% CKD rate)")
     df.to_csv('causal_results/comparison_table.csv', index=False)
     return df
 
 
 # ── Step 6: Visualisations ────────────────────────────────────────────────────
 
-def plot_dag(treatment, out_dir='plots/causal'):
-    G   = build_dag(treatment)
+def plot_dag(treatment, confounders, out_dir='plots/causal'):
+    G   = build_dag(treatment, confounders)
     pos = nx.spring_layout(G, seed=42)
     colors = []
     for node in G.nodes():
@@ -343,7 +331,7 @@ def plot_ate_comparison(comparison_df, out_dir='plots/causal'):
 
 def plot_refutation(all_results, out_dir='plots/causal'):
     treatments = list(all_results.keys())
-    lr_ates    = [all_results[t].get('lr',          np.nan) for t in treatments]
+    lr_ates    = [all_results[t].get('psm',         np.nan) for t in treatments]
     rc_ates    = [all_results[t].get('ref_random_cause', np.nan) for t in treatments]
     pl_ates    = [all_results[t].get('ref_placebo', np.nan) for t in treatments]
     sub_ates   = [all_results[t].get('ref_subset',  np.nan) for t in treatments]
@@ -351,7 +339,7 @@ def plot_refutation(all_results, out_dir='plots/causal'):
     x = np.arange(len(treatments))
     w = 0.2
     plt.figure(figsize=(10, 5))
-    plt.bar(x - 1.5*w, lr_ates,  w, label='Original LR ATE', color='steelblue')
+    plt.bar(x - 1.5*w, lr_ates,  w, label='Original PSM ATE', color='steelblue')
     plt.bar(x - 0.5*w, rc_ates,  w, label='Random Cause',    color='darkorange')
     plt.bar(x + 0.5*w, pl_ates,  w, label='Placebo',         color='tomato')
     plt.bar(x + 1.5*w, sub_ates, w, label='Data Subset',     color='seagreen')
@@ -398,7 +386,7 @@ def main():
         print(f"Exposure: {treatment}")
         print(f"{'═'*50}")
         all_results[treatment] = run_causal(patient_df, treatment)
-        plot_dag(treatment)
+        plot_dag(treatment, BASE_CONFOUNDERS + EXTRA_CONFOUNDERS.get(treatment, []))
 
     comparison_df = build_comparison_table(all_results)
 

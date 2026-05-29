@@ -146,7 +146,7 @@ def main():
     plt.figure(figsize=(10, 6))
     shap.summary_plot(shap_top, X_disp,
                     plot_type='dot',
-                    max_display=20,
+                    max_display=15,
                     show=False)
     plt.tight_layout()
     plt.savefig('plots/shap_beeswarm.png', dpi=150, bbox_inches='tight')

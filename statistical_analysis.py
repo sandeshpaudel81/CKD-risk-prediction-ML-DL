@@ -151,7 +151,7 @@ def main():
     CONTINUOUS_FEATURES = [
         'diabetic_year', 'age_in_years', 'height_in_cm', 'weight_in_kg', 'BMI_in_kg_per_m2',
         'calorie_intake_per_day', 'bmi_change', 'weight_change',
-        'comorbidity_score', 'lifestyle_score', 'ckd_years_so_far'
+        'comorbidity_score', 'lifestyle_score'
     ]
     
     BINARY_FEATURES = [
