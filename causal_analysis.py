@@ -17,24 +17,46 @@ os.makedirs('causal_results', exist_ok=True)
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
+# EXPOSURES = {
+#     'insulin_high'   : 'takes_insulin',
+#     'long_diabetes'  : 'diabetic_year',
+#     'bmi_high'       : 'bmi_change'
+# }
+
+# # Base confounders — mediators and colliders excluded
+# BASE_CONFOUNDERS = [
+#     'age_in_years', 'gender', 'family_diabetic_history', 'calorie_intake_per_day'
+# ]
+
+# # Added when not the exposure itself
+# EXTRA_CONFOUNDERS = {
+#     'insulin_high'   : ['BMI_in_kg_per_m2', 'diabetic_year_mean'],
+#     'long_diabetes'  : ['BMI_in_kg_per_m2'],
+#     'bmi_high'       : ['diabetic_year_mean']
+# }
 EXPOSURES = {
-    'insulin_high'   : 'takes_insulin',
-    'weight_gaining' : 'weight_change',
-    'long_diabetes'  : 'diabetic_year',
-    'bmi_high'       : 'bmi_change'
+    'bmi_high'  : 'bmi_change',        
+    'insulin_high'    : 'takes_insulin',      
+    'long_diabetes'   : 'diabetic_year',    
+    'poor_diet'       : 'diet_regulation',    
 }
 
-# Base confounders — mediators and colliders excluded
 BASE_CONFOUNDERS = [
-    'age_in_years', 'gender', 'family_diabetic_history', 'calorie_intake_per_day'
+    'age_in_years',
+    'gender',
+    'family_diabetic_history',
+    'calorie_intake_per_day',
+    'takes_diabetes_medicine',   
+    'walk_regularly',             
+    'sufficient_sleep',          
 ]
 
-# Added when not the exposure itself
 EXTRA_CONFOUNDERS = {
-    'insulin_high'   : ['BMI_in_kg_per_m2', 'diabetic_year_mean'],
-    'weight_gaining' : ['diabetic_year_mean'],
-    'long_diabetes'  : ['BMI_in_kg_per_m2'],
-    'bmi_high'       : ['diabetic_year_mean']
+    'bmi_high'  : ['diabetic_year_mean', 'weight_in_kg'],
+    'insulin_high'    : ['BMI_in_kg_per_m2', 'diabetic_year_mean'],
+    'long_diabetes'   : ['BMI_in_kg_per_m2'],                        
+    'risk_behaviour'  : ['BMI_in_kg_per_m2', 'diabetic_year_mean'],
+    'poor_diet'       : ['BMI_in_kg_per_m2', 'diabetic_year_mean', 'weight_in_kg'],
 }
 
 OUTCOME = 'ckd_ever'
@@ -57,7 +79,7 @@ def build_patient_summary(data_df):
         for col in ['age_in_years', 'BMI_in_kg_per_m2', 'weight_change',
                     'bmi_change', 'takes_insulin',
                     'has_hypertension', 'has_heart_disease',
-                    'walk_regularly', 'sufficient_sleep']:
+                    'walk_regularly', 'sufficient_sleep', 'diet_regulation', 'risk_behaviour']:
             row[col] = pre[col].mean()
 
         # diabetes duration — max of pre-onset years
@@ -78,9 +100,9 @@ def build_patient_summary(data_df):
 
 def binarise_exposures(df):
     df['insulin_high']   = (df['takes_insulin']          >= 0.5).astype(int)
-    df['weight_gaining'] = (df['weight_change']           > 0.0).astype(int)
-    df['long_diabetes']  = (df['diabetic_year_mean']      >= 10 ).astype(int)
-    df['bmi_high']       = (df['bmi_change']              >= 0.5).astype(int)
+    df['long_diabetes']  = (df['diabetic_year_mean']      >= 7 ).astype(int)
+    df['bmi_high']       = (df['bmi_change']              >= 0.3).astype(int)
+    df['poor_diet']     = (df['diet_regulation']    <  0.5).astype(int)
 
     print("\nExposure distributions:")
     for t in EXPOSURES:
@@ -164,7 +186,7 @@ def run_causal(df, treatment, verbose=True):
         results['psm'] = np.nan
         print(f"  PSM   failed: {e}")
 
-    # Linear regression adjustment — direct sklearn logistic regression
+    # Linear regression adjustment 
     try:
         results['lr'] = _lr_ate_direct(data, treatment, OUTCOME, confounders)
         print(f"  LR    ATE: {results['lr']:.4f}")
@@ -232,16 +254,13 @@ def run_causal(df, treatment, verbose=True):
 
 # ── Step 5: Comparison table ──────────────────────────────────────────────────
 
-SPEARMAN = {
-    'insulin_high'   : 0.125,
-    'weight_gaining' : -0.065,
-    'long_diabetes'  : 0.125,
-}
-
+shap_preonset = pd.read_csv('rf_xgb_results/mean_abs_shap_pre.csv', index_col=0)
+shap_series = shap_preonset.squeeze()
 SHAP_PREONSET = {
-    'insulin_high'   : 0.230,
-    'weight_gaining' : 0.361,
-    'long_diabetes'  : 0.426,
+    'insulin_high':  shap_series['takes_insulin'],
+    'long_diabetes': shap_series['diabetic_year'],
+    'bmi_high':      shap_series['bmi_change'],
+    'poor_diet':     shap_series['diet_regulation']
 }
 
 def build_comparison_table(all_results):
@@ -249,7 +268,6 @@ def build_comparison_table(all_results):
     for treatment, res in all_results.items():
         rows.append({
             'Exposure'        : treatment,
-            'Spearman ρ'      : SPEARMAN.get(treatment, np.nan),
             'SHAP (pre-onset)': SHAP_PREONSET.get(treatment, np.nan),
             'ATE (PSM)'       : round(res.get('psm',      np.nan), 4),
             'ATE (LR)'        : round(res.get('lr',       np.nan), 4),
@@ -261,7 +279,6 @@ def build_comparison_table(all_results):
     df = pd.DataFrame(rows)
     print("\n\n══════ Comparison Table ══════")
     print(df.to_string(index=False))
-    print("\n  Note: long_diabetes ATE flagged — positivity violation (80.8% exposed, unexposed group 100% CKD rate)")
     df.to_csv('causal_results/comparison_table.csv', index=False)
     return df
 
@@ -311,7 +328,7 @@ def plot_ate_comparison(comparison_df, out_dir='plots/causal'):
     axes[0].legend()
     axes[0].grid(axis='y', alpha=0.3)
 
-    # SHAP vs Mean ATE
+    #SHAP vs Mean ATE
     axes[1].scatter(comparison_df['SHAP (pre-onset)'], comparison_df['Mean ATE'],
                     s=120, color='steelblue', zorder=3)
     for _, row in comparison_df.iterrows():
@@ -375,6 +392,8 @@ def main():
 
     print("\nBuilding patient-level pre-onset summary...")
     patient_df = build_patient_summary(full_df)
+
+    print("Shape of patient-level summary:", patient_df.shape)
 
     print("\nBinarising exposures...")
     patient_df = binarise_exposures(patient_df)

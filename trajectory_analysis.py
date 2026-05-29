@@ -7,15 +7,9 @@ import pickle
 import shap
 
 from scipy.stats import linregress
-from sklearn.model_selection import RandomizedSearchCV
-from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import (classification_report, confusion_matrix,
-                             roc_auc_score, average_precision_score,
-                             roc_curve, precision_recall_curve,
-                             f1_score, recall_score)
-from xgboost import XGBClassifier
-from imblearn.over_sampling import SMOTE
+from sklearn.metrics import (roc_curve, precision_recall_curve)
+
+from utils import xgb_fit_evaluate, rf_fit_evaluate, apply_smote, scale_splits
 
 
 # ── Folders ───────────────────────────────────────────────────────────────────
@@ -143,122 +137,6 @@ def build_augmented(X_flat, window_size=5):
 
 def build_replace(X_flat, window_size=5):
     return add_trajectory_features(X_flat, window_size).reset_index(drop=True)
-
-
-# ── Scaling / SMOTE ───────────────────────────────────────────────────────────
-
-def scale_splits(X_train, X_val, X_test):
-    scaler      = StandardScaler()
-    X_train_sc  = pd.DataFrame(scaler.fit_transform(X_train), columns=X_train.columns)
-    X_val_sc    = pd.DataFrame(scaler.transform(X_val),       columns=X_val.columns)
-    X_test_sc   = pd.DataFrame(scaler.transform(X_test),      columns=X_test.columns)
-    return X_train_sc, X_val_sc, X_test_sc, scaler
-
-
-def apply_smote(X_train, y_train, k_neighbors=5):
-    k = min(k_neighbors, int(y_train.sum()) - 1)
-    sm = SMOTE(random_state=42, k_neighbors=k)
-    X_res, y_res = sm.fit_resample(X_train, y_train)
-    print(f"  Before SMOTE — CKD=0: {(y_train==0).sum()}  CKD=1: {(y_train==1).sum()}")
-    print(f"   After SMOTE — CKD=0: {(y_res==0).sum()}  CKD=1: {(y_res==1).sum()}")
-    return X_res, y_res
-
-
-# ── Threshold / Evaluate ──────────────────────────────────────────────────────
-
-def find_best_threshold(y_true, y_prob):
-    fpr, tpr, thresholds = roc_curve(y_true, y_prob)
-    j       = tpr - fpr
-    return float(thresholds[np.argmax(j)])
-
-
-def evaluate(model, X_test, y_test, X_val, y_val, model_name, experiment):
-    print(f"\n{model_name}  |  {experiment}")
-    y_val_prob  = model.predict_proba(X_val)[:, 1]
-    y_test_prob = model.predict_proba(X_test)[:, 1]
-    thresh      = find_best_threshold(y_val, y_val_prob)
-    print(f"  Optimal threshold (Youden's J): {thresh:.3f}")
-    y_pred = (y_test_prob >= thresh).astype(int)
-    print(classification_report(y_test, y_pred, target_names=['No CKD', 'CKD']))
-    print(f"  ROC-AUC : {roc_auc_score(y_test, y_test_prob):.4f}")
-    print(f"  PR-AUC  : {average_precision_score(y_test, y_test_prob):.4f}")
-    cm = confusion_matrix(y_test, y_pred)
-    print(f"  TN={cm[0,0]}  FP={cm[0,1]}")
-    print(f"  FN={cm[1,0]}  TP={cm[1,1]}")
-    return {
-        'model'      : model_name,
-        'experiment' : experiment,
-        'threshold'  : thresh,
-        'roc_auc'    : roc_auc_score(y_test, y_test_prob),
-        'pr_auc'     : average_precision_score(y_test, y_test_prob),
-        'recall_ckd' : recall_score(y_test, y_pred),
-        'f1_ckd'     : f1_score(y_test, y_pred),
-        'y_prob'     : y_test_prob,
-        'y_pred'     : y_pred,
-        'cm'         : cm,
-    }
-
-
-# ── Model trainers ────────────────────────────────────────────────────────────
-
-def rf_fit_evaluate(X_train, y_train, X_val, y_val, X_test, y_test, experiment):
-    param_grid = {
-        'n_estimators'      : [200, 300, 500],
-        'max_depth'         : [None, 10, 20, 30],
-        'min_samples_split' : [2, 5, 10],
-        'min_samples_leaf'  : [1, 2, 4],
-        'max_features'      : ['sqrt', 'log2'],
-        'class_weight'      : ['balanced', {0:1, 1:3}, {0:1, 1:5}]
-    }
-    search = RandomizedSearchCV(
-        RandomForestClassifier(random_state=42, n_jobs=-1),
-        param_distributions=param_grid,
-        n_iter=30, scoring='roc_auc', cv=3,
-        random_state=42, n_jobs=-1, verbose=1
-    )
-    search.fit(X_train, y_train)
-    print(f"  Best RF params : {search.best_params_}")
-    print(f"  Best CV AUC    : {search.best_score_:.4f}")
-    best = search.best_estimator_
-    res  = evaluate(best, X_test, y_test, X_val, y_val,
-                    model_name='Random Forest', experiment=experiment)
-    return best, res
-
-
-def xgb_fit_evaluate(X_train, y_train, X_val, y_val, X_test, y_test,
-                     balance_method, experiment):
-    print(f"\n  XGBoost | {balance_method} | {experiment}")
-    scale = (y_train == 0).sum() / y_train.sum()
-    param_grid = {
-        'n_estimators'     : [200, 300, 500],
-        'max_depth'        : [3, 4, 6, 8],
-        'learning_rate'    : [0.01, 0.05, 0.1, 0.2],
-        'subsample'        : [0.6, 0.8, 1.0],
-        'colsample_bytree' : [0.6, 0.8, 1.0],
-        'min_child_weight' : [1, 3, 5],
-        'gamma'            : [0, 0.1, 0.3],
-        'reg_alpha'        : [0, 0.1, 1.0],
-        'reg_lambda'       : [1.0, 5.0, 10.0],
-    }
-    search = RandomizedSearchCV(
-        XGBClassifier(
-            scale_pos_weight=scale,
-            eval_metric='auc',
-            random_state=42,
-            n_jobs=-1,
-            verbosity=0
-        ),
-        param_distributions=param_grid,
-        n_iter=30, scoring='roc_auc', cv=3,
-        random_state=42, n_jobs=-1, verbose=1
-    )
-    search.fit(X_train, y_train)
-    print(f"  Best XGB params: {search.best_params_}")
-    print(f"  Best CV AUC    : {search.best_score_:.4f}")
-    best = search.best_estimator_
-    res  = evaluate(best, X_test, y_test, X_val, y_val,
-                    model_name=f'XGBoost ({balance_method})', experiment=experiment)
-    return best, res
 
 
 # ── Summary printer ───────────────────────────────────────────────────────────
@@ -623,75 +501,47 @@ def main():
     print(imp_rf_rep_pre.head(20).to_string())
 
     # ═════════════════════════════════════════════════════════════════════════
-    # XGBOOST — Augmented (pos_weight)
+    # XGBOOST — Augmented
     # ═════════════════════════════════════════════════════════════════════════
-    print("\n\n══════ XGBoost — Augmented (pos_weight) ══════")
+    print("\n\n══════ XGBoost — Augmented ══════")
 
     xgb_aug_all_pw, res_xgb_aug_all_pw = xgb_fit_evaluate(
-        X_tr_all_aug_sc, y_tr_all,
-        X_va_all_aug_sc, y_va_all,
-        X_te_all_aug_sc, y_te_all,
+        data = {
+            'X_train': X_tr_all_aug_sc, 'y_train': y_tr_all,
+            'X_val': X_va_all_aug_sc, 'y_val': y_va_all,
+            'X_test': X_te_all_aug_sc, 'y_test': y_te_all
+        },
         balance_method='pos_weight', experiment='All Windows (Augmented)'
     )
     xgb_aug_pre_pw, res_xgb_aug_pre_pw = xgb_fit_evaluate(
-        X_tr_pre_aug_sc, y_tr_pre,
-        X_va_pre_aug_sc, y_va_pre,
-        X_te_pre_aug_sc, y_te_pre,
+        data = {
+            'X_train': X_tr_pre_aug_sc, 'y_train': y_tr_pre,
+            'X_val': X_va_pre_aug_sc, 'y_val': y_va_pre,
+            'X_test': X_te_pre_aug_sc, 'y_test': y_te_pre
+        },
         balance_method='pos_weight', experiment='Pre-onset Only (Augmented)'
     )
 
     # ═════════════════════════════════════════════════════════════════════════
-    # XGBOOST — Augmented (SMOTE)
+    # XGBOOST — Replace
     # ═════════════════════════════════════════════════════════════════════════
-    print("\n\n══════ XGBoost — Augmented (SMOTE) ══════")
-
-    xgb_aug_all_sm, res_xgb_aug_all_sm = xgb_fit_evaluate(
-        X_tr_all_aug_sm, y_tr_all_aug_sm,
-        X_va_all_aug_sc, y_va_all,
-        X_te_all_aug_sc, y_te_all,
-        balance_method='SMOTE', experiment='All Windows (Augmented)'
-    )
-    xgb_aug_pre_sm, res_xgb_aug_pre_sm = xgb_fit_evaluate(
-        X_tr_pre_aug_sm, y_tr_pre_aug_sm,
-        X_va_pre_aug_sc, y_va_pre,
-        X_te_pre_aug_sc, y_te_pre,
-        balance_method='SMOTE', experiment='Pre-onset Only (Augmented)'
-    )
-
-    # ═════════════════════════════════════════════════════════════════════════
-    # XGBOOST — Replace (pos_weight)
-    # ═════════════════════════════════════════════════════════════════════════
-    print("\n\n══════ XGBoost — Replace (pos_weight) ══════")
+    print("\n\n══════ XGBoost — Replace ══════")
 
     xgb_rep_all_pw, res_xgb_rep_all_pw = xgb_fit_evaluate(
-        X_tr_all_rep_sc, y_tr_all,
-        X_va_all_rep_sc, y_va_all,
-        X_te_all_rep_sc, y_te_all,
+        data = {
+        'X_train': X_tr_all_rep_sc, 'y_train': y_tr_all,
+        'X_val': X_va_all_rep_sc, 'y_val': y_va_all,
+        'X_test': X_te_all_rep_sc, 'y_test': y_te_all
+        },
         balance_method='pos_weight', experiment='All Windows (Replace)'
     )
     xgb_rep_pre_pw, res_xgb_rep_pre_pw = xgb_fit_evaluate(
-        X_tr_pre_rep_sc, y_tr_pre,
-        X_va_pre_rep_sc, y_va_pre,
-        X_te_pre_rep_sc, y_te_pre,
+        data = {
+        'X_train': X_tr_pre_rep_sc, 'y_train': y_tr_pre,
+        'X_val': X_va_pre_rep_sc, 'y_val': y_va_pre,
+        'X_test': X_te_pre_rep_sc, 'y_test': y_te_pre
+        },
         balance_method='pos_weight', experiment='Pre-onset Only (Replace)'
-    )
-
-    # ═════════════════════════════════════════════════════════════════════════
-    # XGBOOST — Replace (SMOTE)
-    # ═════════════════════════════════════════════════════════════════════════
-    print("\n\n══════ XGBoost — Replace (SMOTE) ══════")
-
-    xgb_rep_all_sm, res_xgb_rep_all_sm = xgb_fit_evaluate(
-        X_tr_all_rep_sm, y_tr_all_rep_sm,
-        X_va_all_rep_sc, y_va_all,
-        X_te_all_rep_sc, y_te_all,
-        balance_method='SMOTE', experiment='All Windows (Replace)'
-    )
-    xgb_rep_pre_sm, res_xgb_rep_pre_sm = xgb_fit_evaluate(
-        X_tr_pre_rep_sm, y_tr_pre_rep_sm,
-        X_va_pre_rep_sc, y_va_pre,
-        X_te_pre_rep_sc, y_te_pre,
-        balance_method='SMOTE', experiment='Pre-onset Only (Replace)'
     )
 
     # XGBoost feature importances
@@ -708,13 +558,13 @@ def main():
         xgb_rep_pre_pw.feature_importances_, index=X_tr_pre_rep_sc.columns
     ).sort_values(ascending=False)
 
-    print("\nTop 20 XGBoost (Augmented, pos_weight) — All Windows:")
+    print("\nTop 20 XGBoost (Augmented) — All Windows:")
     print(imp_xgb_aug_all.head(20).to_string())
-    print("\nTop 20 XGBoost (Augmented, pos_weight) — Pre-onset Only:")
+    print("\nTop 20 XGBoost (Augmented) — Pre-onset Only:")
     print(imp_xgb_aug_pre.head(20).to_string())
-    print("\nTop 20 XGBoost (Replace, pos_weight) — All Windows:")
+    print("\nTop 20 XGBoost (Replace) — All Windows:")
     print(imp_xgb_rep_all.head(20).to_string())
-    print("\nTop 20 XGBoost (Replace, pos_weight) — Pre-onset Only:")
+    print("\nTop 20 XGBoost (Replace) — Pre-onset Only:")
     print(imp_xgb_rep_pre.head(20).to_string())
 
     # ═════════════════════════════════════════════════════════════════════════
@@ -723,10 +573,8 @@ def main():
     print("\n\n══════ Summary of All Results ══════")
     show_results('RF — Augmented',           [res_rf_aug_all, res_rf_aug_pre])
     show_results('RF — Replace',             [res_rf_rep_all, res_rf_rep_pre])
-    show_results('XGBoost Augmented pos_wt', [res_xgb_aug_all_pw, res_xgb_aug_pre_pw])
-    show_results('XGBoost Augmented SMOTE',  [res_xgb_aug_all_sm, res_xgb_aug_pre_sm])
-    show_results('XGBoost Replace pos_wt',   [res_xgb_rep_all_pw, res_xgb_rep_pre_pw])
-    show_results('XGBoost Replace SMOTE',    [res_xgb_rep_all_sm, res_xgb_rep_pre_sm])
+    show_results('XGBoost Augmented', [res_xgb_aug_all_pw, res_xgb_aug_pre_pw])
+    show_results('XGBoost Replace',   [res_xgb_rep_all_pw, res_xgb_rep_pre_pw])
 
     # ═════════════════════════════════════════════════════════════════════════
     # SHAP
@@ -763,17 +611,13 @@ def main():
     plot_roc_pr(
         results_all=[
             (res_rf_aug_all,      'RF (Augmented)'),
-            (res_xgb_aug_all_pw,  'XGBoost Augmented (pos_wt)'),
-            (res_xgb_aug_all_sm,  'XGBoost Augmented (SMOTE)'),
-            (res_xgb_rep_all_pw,  'XGBoost Replace (pos_wt)'),
-            (res_xgb_rep_all_sm,  'XGBoost Replace (SMOTE)'),
+            (res_xgb_aug_all_pw,  'XGBoost Augmented'),
+            (res_xgb_rep_all_pw,  'XGBoost Replace'),
         ],
         results_pre=[
             (res_rf_aug_pre,      'RF (Augmented)'),
-            (res_xgb_aug_pre_pw,  'XGBoost Augmented (pos_wt)'),
-            (res_xgb_aug_pre_sm,  'XGBoost Augmented (SMOTE)'),
-            (res_xgb_rep_pre_pw,  'XGBoost Replace (pos_wt)'),
-            (res_xgb_rep_pre_sm,  'XGBoost Replace (SMOTE)'),
+            (res_xgb_aug_pre_pw,  'XGBoost Augmented'),
+            (res_xgb_rep_pre_pw,  'XGBoost Replace')
         ],
         y_test_all=y_te_all, y_test_pre=y_te_pre,
         suffix='trajectory', out_dir=OUT
@@ -810,7 +654,7 @@ def main():
         for r in baseline_results:
             r['experiment'] = r['experiment'].replace('windows', 'Windows').replace('only', 'Only')
             if 'XGBoost' in r['model']:
-                r['model'] = 'XGBoost (pos_weight)'
+                r['model'] = 'XGBoost'
             else:
                 r['model'] = 'Random Forest'
 
@@ -838,12 +682,8 @@ def main():
     joblib.dump(rf_rep_pre,      'trajectory_results/model_rf_rep_pre.pkl')
     joblib.dump(xgb_aug_all_pw,  'trajectory_results/model_xgb_aug_all_pw.pkl')
     joblib.dump(xgb_aug_pre_pw,  'trajectory_results/model_xgb_aug_pre_pw.pkl')
-    joblib.dump(xgb_aug_all_sm,  'trajectory_results/model_xgb_aug_all_sm.pkl')
-    joblib.dump(xgb_aug_pre_sm,  'trajectory_results/model_xgb_aug_pre_sm.pkl')
     joblib.dump(xgb_rep_all_pw,  'trajectory_results/model_xgb_rep_all_pw.pkl')
     joblib.dump(xgb_rep_pre_pw,  'trajectory_results/model_xgb_rep_pre_pw.pkl')
-    joblib.dump(xgb_rep_all_sm,  'trajectory_results/model_xgb_rep_all_sm.pkl')
-    joblib.dump(xgb_rep_pre_sm,  'trajectory_results/model_xgb_rep_pre_sm.pkl')
 
     np.save('trajectory_results/X_test_all_aug.npy', X_te_all_aug_sc.values)
     np.save('trajectory_results/X_test_pre_aug.npy', X_te_pre_aug_sc.values)
@@ -863,12 +703,8 @@ def main():
             'res_rf_rep_pre'      : res_rf_rep_pre,
             'res_xgb_aug_all_pw'  : res_xgb_aug_all_pw,
             'res_xgb_aug_pre_pw'  : res_xgb_aug_pre_pw,
-            'res_xgb_aug_all_sm'  : res_xgb_aug_all_sm,
-            'res_xgb_aug_pre_sm'  : res_xgb_aug_pre_sm,
             'res_xgb_rep_all_pw'  : res_xgb_rep_all_pw,
             'res_xgb_rep_pre_pw'  : res_xgb_rep_pre_pw,
-            'res_xgb_rep_all_sm'  : res_xgb_rep_all_sm,
-            'res_xgb_rep_pre_sm'  : res_xgb_rep_pre_sm,
         }, f)
 
     print("\nDone.")

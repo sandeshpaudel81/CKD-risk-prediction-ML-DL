@@ -1,5 +1,5 @@
-Exposure,Spearman ρ,SHAP (pre-onset),ATE (PSM),ATE (LR),ATE (IPW),Mean ATE,Placebo ATE,Robust
-insulin_high,0.125,0.23,0.1325,0.1239,0.1215,0.126,0.0051,True
-weight_gaining,-0.065,0.361,0.04,0.0861,0.0865,0.0709,-0.0027,True
-long_diabetes,0.125,0.426,-0.6675,-0.6515,-0.6649,-0.6613,-0.0014,True
-bmi_high,,,0.5475,0.5354,0.5465,0.5432,-0.0255,True
+Exposure,SHAP (pre-onset),ATE (PSM),ATE (LR),ATE (IPW),Mean ATE,Placebo ATE,Robust
+bmi_high,0.55321854,0.5675,0.5149,0.5456,0.5427,0.0012,True
+insulin_high,0.23112752,0.12,0.0989,0.0968,0.1052,-0.0014,True
+long_diabetes,0.4138841,-0.5925,-0.5746,-0.5894,-0.5855,-0.0021,True
+poor_diet,0.026208697,0.33,0.2824,0.3221,0.3115,-0.004,True

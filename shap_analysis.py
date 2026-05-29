@@ -109,6 +109,9 @@ def main():
     mean_abs_shap_all = top_n_shap_features(shap_values_all, X_test_all, FEATURE_COLS, n=15)
     mean_abs_shap_pre = top_n_shap_features(shap_values_pre, X_test_pre, FEATURE_COLS, n=15)
 
+    mean_abs_shap_all.to_csv('rf_xgb_results/mean_abs_shap_all.csv', header=True)
+    mean_abs_shap_pre.to_csv('rf_xgb_results/mean_abs_shap_pre.csv', header=True)
+
     # Plotting SHAP summary plots for top features
     fig, axes = plt.subplots(1, 2, figsize=(14, 12))
     for ax, experiment, mean_abs_shap in [
