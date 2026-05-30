@@ -1,5 +1,4 @@
 # Import data processing and visualisation functions
-import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -7,74 +6,23 @@ import joblib
 import pickle
 
 # Import model development and evaluation packages
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import (classification_report, confusion_matrix,
                                         roc_auc_score, average_precision_score,
                                         roc_curve, precision_recall_curve, f1_score, recall_score)
-from imblearn.over_sampling import SMOTE
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import TensorDataset, DataLoader
+
+from utils.common import create_folder
+from utils.lstm_bilstm import (
+    build_windows_3d, scale_3d,
+    smote_3d, make_loader
+)
+from utils.rf_xgb import find_best_threshold
  
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(f"Device: {DEVICE}")
-
-def create_folder():
-    folders = ['plots', 'bilstm_results']
-    cwd = os.getcwd()
-    for folder in folders:
-        folder_name = os.path.join(cwd, folder)
-        if not os.path.exists(folder_name):
-            os.makedirs(folder_name)
-
-def build_windows_3d(data_df, feature_cols, target_col,
-                     window_size=5, pre_onset_only=False):
-    X_list, y_list, pid_list, yr_list = [], [], [], []
-    for pid, group in data_df.groupby('patient_id'):
-        group    = group.sort_values('diabetic_year')
-        features = group[feature_cols].values
-        labels   = group[target_col].values
-        n        = len(features)
- 
-        for i in range(n - window_size):
-            window_feats  = features[i : i + window_size]
-            window_labels = labels[i : i + window_size]
-            target        = labels[i + window_size]
- 
-            if pre_onset_only and window_labels.sum() > 0:
-                continue
- 
-            X_list.append(window_feats)
-            y_list.append(target)
-            pid_list.append(pid)
- 
-    return (np.array(X_list,   dtype=np.float32),
-            np.array(y_list,   dtype=np.float32),
-            np.array(pid_list, dtype=np.int32))
-
-def scale_3d(X_tr, X_v, X_te):
-    n_feat  = X_tr.shape[2]
-    sc      = StandardScaler()
-    X_tr_sc = sc.fit_transform(X_tr.reshape(-1, n_feat)).reshape(X_tr.shape)
-    X_v_sc  = sc.transform(X_v.reshape(-1, n_feat)).reshape(X_v.shape)
-    X_te_sc = sc.transform(X_te.reshape(-1, n_feat)).reshape(X_te.shape)
-    return X_tr_sc, X_v_sc, X_te_sc, sc
-
-def smote_3d(X_train, y_train, k_neighbors=5):
-    shape  = X_train.shape
-    X_flat = X_train.reshape(len(X_train), -1)
-    k      = min(k_neighbors, int(y_train.sum()) - 1)
-    sm     = SMOTE(random_state=42, k_neighbors=k)
-    X_res, y_res = sm.fit_resample(X_flat, y_train)
-    X_3d   = X_res.reshape(-1, shape[1], shape[2])
-    print(f"  After SMOTE — CKD=0: {(y_res==0).sum()}  CKD=1: {(y_res==1).sum()}")
-    return X_3d.astype(np.float32), y_res.astype(np.float32)
-
-def make_loader(X, y, batch_size=32, shuffle=True):
-    ds = TensorDataset(torch.tensor(X), torch.tensor(y))
-    return DataLoader(ds, batch_size=batch_size, shuffle=shuffle)
 
 class Attention(nn.Module):
     """
@@ -201,20 +149,8 @@ def train_model(model, train_loader, val_loader, pos_weight,
     model.load_state_dict(best_state)
     return model, history
 
-def find_best_threshold(y_true, y_prob, method='youden'):
-    if method == 'youden':
-        fpr, tpr, thresholds = roc_curve(y_true, y_prob)
-        j_scores = tpr - fpr
-        best_thresh = thresholds[np.argmax(j_scores)]
-    else:
-        precision, recall, thresholds = precision_recall_curve(y_true, y_prob)
-        f1 = 2 * precision * recall / (precision + recall + 1e-8)
-        best_thresh = thresholds[np.argmax(f1[:-1])]
-    return float(best_thresh)
-
 def evaluate_model(model, X_test, y_test, X_val, y_val,
-                  model_name='BiLSTM_Attention', experiment='All windows',
-                  device='cpu'):
+                  model_name, experiment, device='cpu'):
     model.eval()
     with torch.no_grad():
         val_probs  = torch.sigmoid(
@@ -313,22 +249,26 @@ def get_attention_weights(model, X, device='cpu'):
             all_weights.append(attn_w.cpu().numpy())
     return np.concatenate(all_weights, axis=0)  
 
-def main():
-    create_folder()
+def main(base_dir):
+    create_folder(base_dir, ['plots/bilstm_attention', 'results/bilstm_attention'])
+
+    PLOT_DIR = base_dir / 'plots/bilstm_attention'
+    OUT_DIR = base_dir / 'results/bilstm_attention'
+
     print("Running BiLSTM with Attention...")
     
     # Import train, validation and test dataframes from file
     print("Loading datasets...")
     train_df = pd.DataFrame(
-        np.load('dataset/train_df.npy', allow_pickle=True),
-        columns=pd.read_csv('dataset/column_names.csv').iloc[:,0].tolist()
+        np.load(f'{base_dir}/dataset/train_df.npy', allow_pickle=True),
+        columns=pd.read_csv(f'{base_dir}/dataset/column_names.csv').iloc[:,0].tolist()
     )
     val_df = pd.DataFrame(
-        np.load('dataset/val_df.npy', allow_pickle=True),
+        np.load(f'{base_dir}/dataset/val_df.npy', allow_pickle=True),
         columns=train_df.columns
     )
     test_df = pd.DataFrame(
-        np.load('dataset/test_df.npy', allow_pickle=True),
+        np.load(f'{base_dir}/dataset/test_df.npy', allow_pickle=True),
         columns=train_df.columns
     )
 
@@ -412,7 +352,7 @@ def main():
         ax.legend(lines1 + lines2, labels1 + labels2, loc='center right')
         ax.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig('plots/bilstm_attention_training_curves.png', dpi=150, bbox_inches='tight')
+    plt.savefig(f'{PLOT_DIR}/bilstm_training_curves.png', dpi=150, bbox_inches='tight')
 
     # Precision-Recall curve
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
@@ -433,7 +373,7 @@ def main():
         ax.legend(loc='upper right')
         ax.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig('plots/biLstm_pr_curves.png', dpi=150, bbox_inches='tight')
+    plt.savefig(f'{PLOT_DIR}/bilstm_pr_curves.png', dpi=150, bbox_inches='tight')
 
     # ROC Curve
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
@@ -453,7 +393,7 @@ def main():
         ax.grid(alpha=0.3)
     
     plt.tight_layout()
-    plt.savefig('plots/bilstm_roc_curves.png', dpi=150, bbox_inches='tight')
+    plt.savefig(f'{PLOT_DIR}/bilstm_roc_curves.png', dpi=150, bbox_inches='tight')
 
     # Get attention weights for all-windows test set
     attn_weights_all = get_attention_weights(model_all, X_test_all, DEVICE)
@@ -481,7 +421,7 @@ def main():
     plt.suptitle('Which year in the 5-year window does BiLSTM+Attention focus on?',
                 fontsize=11)
     plt.tight_layout()
-    plt.savefig('plots/bilstm_attention_global.png', dpi=150, bbox_inches='tight')
+    plt.savefig(f'{PLOT_DIR}/bilstm_attention_global.png', dpi=150, bbox_inches='tight')
 
     # Patient-level attention
     # Showing individual attention weight profiles for:
@@ -524,24 +464,24 @@ def main():
     axes[1, 0].annotate('Missed CKD (False Negative):', xy=(0, 1.02),
                         xycoords='axes fraction', fontsize=9, color='steelblue')
     plt.tight_layout()
-    plt.savefig('plots/attention_patient_level.png', dpi=150, bbox_inches='tight')
+    plt.savefig(f'{PLOT_DIR}/attention_patient_level.png', dpi=150, bbox_inches='tight')
 
     # Save models
-    joblib.dump(model_all, 'bilstm_results/model_bilstm_all_scale.pkl')
-    joblib.dump(model_pre, 'bilstm_results/model_bilstm_pre_scale.pkl')
+    joblib.dump(model_all, f'{OUT_DIR}/model_bilstm_all_scale.pkl')
+    joblib.dump(model_pre, f'{OUT_DIR}/model_bilstm_pre_scale.pkl')
 
     # Save test data + predictions
-    np.save('bilstm_results/X_test_all.npy',    X_test_all)
-    np.save('bilstm_results/y_test_all.npy',    y_test_all)
-    np.save('bilstm_results/X_train_all.npy',   X_train_all)
-    np.save('bilstm_results/y_train_all.npy',   y_train_all)
-    np.save('bilstm_results/X_test_pre.npy',    X_test_pre)
-    np.save('bilstm_results/y_test_pre.npy',    y_test_pre)
-    np.save('bilstm_results/X_train_pre.npy',   X_train_pre)
-    np.save('bilstm_results/y_train_pre.npy',   y_train_pre)
+    np.save(f'{OUT_DIR}/X_test_all.npy',    X_test_all)
+    np.save(f'{OUT_DIR}/y_test_all.npy',    y_test_all)
+    np.save(f'{OUT_DIR}/X_train_all.npy',   X_train_all)
+    np.save(f'{OUT_DIR}/y_train_all.npy',   y_train_all)
+    np.save(f'{OUT_DIR}/X_test_pre.npy',    X_test_pre)
+    np.save(f'{OUT_DIR}/y_test_pre.npy',    y_test_pre)
+    np.save(f'{OUT_DIR}/X_train_pre.npy',   X_train_pre)
+    np.save(f'{OUT_DIR}/y_train_pre.npy',   y_train_pre)
 
     # Save results dict
-    with open('bilstm_results/results_bilstm.pkl', 'wb') as f:
+    with open(f'{OUT_DIR}/results_bilstm.pkl', 'wb') as f:
         pickle.dump({'res_all': res_all, 'res_pre': res_pre}, f)
 
 if __name__ == "__main__":

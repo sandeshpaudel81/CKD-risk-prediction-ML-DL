@@ -1,5 +1,4 @@
 # Import data processing and visualisation functions
-import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -7,67 +6,22 @@ import joblib
 import pickle
 
 # Import model development and evaluation packages
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import (classification_report, confusion_matrix,
                                         roc_auc_score, average_precision_score,
                                         roc_curve, precision_recall_curve, f1_score, recall_score)
-from imblearn.over_sampling import SMOTE
 import torch
 import torch.nn as nn
-from torch.utils.data import TensorDataset, DataLoader
- 
+
+# Import utility functions
+from utils.common import create_folder, show_results
+from utils.lstm_bilstm import (
+    build_windows_3d, scale_3d, smote_3d, make_loader
+)
+from utils.rf_xgb import find_best_threshold
+
+# Set device for PyTorch
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(f"Device: {DEVICE}")
-
-def create_folder():
-    folders = ['plots', 'lstm_results']
-    cwd = os.getcwd()
-    for folder in folders:
-        folder_name = os.path.join(cwd, folder)
-        if not os.path.exists(folder_name):
-            os.makedirs(folder_name)
-
-def build_windows_3d(data_df, feature_cols, target_col,
-                     window_size=5, pre_onset_only=False):
-    X_list, y_list = [], []
-    for pid, group in data_df.groupby('patient_id'):
-        group    = group.sort_values('diabetic_year')
-        features = group[feature_cols].values
-        labels   = group[target_col].values
-        n        = len(features)
-        for i in range(n - window_size):
-            window_feats  = features[i : i + window_size]
-            window_labels = labels[i : i + window_size]
-            target        = labels[i + window_size]
-            if pre_onset_only and window_labels.sum() > 0:
-                continue
-            X_list.append(window_feats)
-            y_list.append(target)
-    return (np.array(X_list, dtype=np.float32),
-            np.array(y_list, dtype=np.float32))
-
-def scale_3d(X_tr, X_v, X_te):
-    n_feat  = X_tr.shape[2]
-    sc      = StandardScaler()
-    X_tr_sc = sc.fit_transform(X_tr.reshape(-1, n_feat)).reshape(X_tr.shape)
-    X_v_sc  = sc.transform(X_v.reshape(-1, n_feat)).reshape(X_v.shape)
-    X_te_sc = sc.transform(X_te.reshape(-1, n_feat)).reshape(X_te.shape)
-    return X_tr_sc, X_v_sc, X_te_sc
-
-def smote_3d(X_train, y_train, k_neighbors=5):
-    shape  = X_train.shape
-    X_flat = X_train.reshape(len(X_train), -1)
-    k      = min(k_neighbors, int(y_train.sum()) - 1)
-    sm     = SMOTE(random_state=42, k_neighbors=k)
-    X_res, y_res = sm.fit_resample(X_flat, y_train)
-    X_3d   = X_res.reshape(-1, shape[1], shape[2])
-    print(f"  After SMOTE — CKD=0: {(y_res==0).sum()}  CKD=1: {(y_res==1).sum()}")
-    return X_3d.astype(np.float32), y_res.astype(np.float32)
-
-def make_loader(X, y, batch_size=32, shuffle=True):
-    ds = TensorDataset(torch.tensor(X), torch.tensor(y))
-    return DataLoader(ds, batch_size=batch_size, shuffle=shuffle)
 
 class VanillaLSTM(nn.Module):
     """
@@ -162,18 +116,7 @@ def train_lstm(model, train_loader, val_loader, pos_weight,
     model.load_state_dict(best_state)
     return model, history
 
-def find_best_threshold(y_true, y_prob, method='youden'):
-    if method == 'youden':
-        fpr, tpr, thresholds = roc_curve(y_true, y_prob)
-        j_scores = tpr - fpr
-        best_thresh = thresholds[np.argmax(j_scores)]
-    else:
-        precision, recall, thresholds = precision_recall_curve(y_true, y_prob)
-        f1 = 2 * precision * recall / (precision + recall + 1e-8)
-        best_thresh = thresholds[np.argmax(f1[:-1])]
-    return float(best_thresh)
-
-def evaluate_lstm(model, X_test, y_test, X_val, y_val,
+def evaluate_model(model, X_test, y_test, X_val, y_val,
                   model_name='Vanilla LSTM', experiment='All windows',
                   device='cpu'):
     model.eval()
@@ -213,7 +156,6 @@ def evaluate_lstm(model, X_test, y_test, X_val, y_val,
     }
 
 def train_and_evaluate(data, model_name, balance_method, experiment):
-    
     print(f"\n Training Vanilla LSTM on {balance_method} data for {experiment} experiment..")
     
     X_train, y_train = data['X_train'], data['y_train']
@@ -241,7 +183,7 @@ def train_and_evaluate(data, model_name, balance_method, experiment):
         model, train_loader, val_loader,
         pos_weight, epochs=80, lr=1e-3, patience=12, device=DEVICE)
      
-    result = evaluate_lstm(
+    result = evaluate_model(
         model,
         X_test, y_test,
         X_val,  y_val,
@@ -249,35 +191,25 @@ def train_and_evaluate(data, model_name, balance_method, experiment):
 
     return model, history, result
 
-def show_results(model, results):
-    print(f"\n{model} Results:")
-    summary = pd.DataFrame([{
-        'Model'       : r['model'],
-        'Experiment'  : r['experiment'],
-        'ROC-AUC'     : round(r['roc_auc'], 4),
-        'PR-AUC'      : round(r['pr_auc'],  4),
-        'F1 (CKD)'    : round(r['f1_ckd'],  4),
-        'Recall (CKD)': round(r['recall_ckd'], 4),
-        'Threshold'   : round(r['threshold'], 3)
-    } for r in results])
-     
-    print(summary.to_string(index=False))
+def main(base_dir):
+    create_folder(base_dir, ['plots/lstm', 'results/lstm'])
 
-def main():
-    create_folder()
+    PLOT_DIR = base_dir / 'plots/lstm'
+    OUT_DIR  = base_dir / 'results/lstm'
+
     print("Vanilla LSTM modeling...")
 
     # Import train, validation and test dataframes from file
     train_df = pd.DataFrame(
-        np.load('dataset/train_df.npy', allow_pickle=True),
-        columns=pd.read_csv('dataset/column_names.csv').iloc[:,0].tolist()
+        np.load(f'{base_dir}/dataset/train_df.npy', allow_pickle=True),
+        columns=pd.read_csv(f'{base_dir}/dataset/column_names.csv').iloc[:,0].tolist()
     )
     val_df = pd.DataFrame(
-        np.load('dataset/val_df.npy', allow_pickle=True),
+        np.load(f'{base_dir}/dataset/val_df.npy', allow_pickle=True),
         columns=train_df.columns
     )
     test_df = pd.DataFrame(
-        np.load('dataset/test_df.npy', allow_pickle=True),
+        np.load(f'{base_dir}/dataset/test_df.npy', allow_pickle=True),
         columns=train_df.columns
     )
 
@@ -287,14 +219,14 @@ def main():
     print(f"\nFeature columns ({len(FEATURE_COLS)}): {FEATURE_COLS}")
 
     # Build sliding windows for all-window experiment
-    X_train_all, y_train_all = build_windows_3d(train_df, FEATURE_COLS, TARGET_COL)
-    X_val_all, y_val_all = build_windows_3d(val_df, FEATURE_COLS, TARGET_COL)
-    X_test_all, y_test_all = build_windows_3d(test_df, FEATURE_COLS, TARGET_COL)
+    X_train_all, y_train_all, pid_train_all = build_windows_3d(train_df, FEATURE_COLS, TARGET_COL)
+    X_val_all, y_val_all, pid_val_all = build_windows_3d(val_df, FEATURE_COLS, TARGET_COL)
+    X_test_all, y_test_all, pid_test_all = build_windows_3d(test_df, FEATURE_COLS, TARGET_COL)
 
     # Build sliding windows for pre-onset-only experiment
-    X_train_pre, y_train_pre = build_windows_3d(train_df, FEATURE_COLS, TARGET_COL, pre_onset_only=True)
-    X_val_pre, y_val_pre = build_windows_3d(val_df, FEATURE_COLS, TARGET_COL, pre_onset_only=True)
-    X_test_pre, y_test_pre = build_windows_3d(test_df, FEATURE_COLS, TARGET_COL, pre_onset_only=True)
+    X_train_pre, y_train_pre, pid_train_pre = build_windows_3d(train_df, FEATURE_COLS, TARGET_COL, pre_onset_only=True)
+    X_val_pre, y_val_pre, pid_val_pre = build_windows_3d(val_df, FEATURE_COLS, TARGET_COL, pre_onset_only=True)
+    X_test_pre, y_test_pre, pid_test_pre = build_windows_3d(test_df, FEATURE_COLS, TARGET_COL, pre_onset_only=True)
 
     print(f"\nAll-windows  — Train: {X_train_all.shape}  "
         f"CKD=1: {y_train_all.sum():.0f}")
@@ -302,8 +234,8 @@ def main():
         f"CKD=1: {y_train_pre.sum():.0f}")
     
     # Scale features for both experiments
-    X_train_all, X_val_all, X_test_all = scale_3d(X_train_all, X_val_all, X_test_all)
-    X_train_pre, X_val_pre, X_test_pre = scale_3d(X_train_pre, X_val_pre, X_test_pre)
+    X_train_all, X_val_all, X_test_all, scaler_all = scale_3d(X_train_all, X_val_all, X_test_all)
+    X_train_pre, X_val_pre, X_test_pre, scaler_pre = scale_3d(X_train_pre, X_val_pre, X_test_pre)
     
     # Apply SMOTE to training data for both experiments
     print("\nSMOTE for LSTM all-windows train...")
@@ -390,7 +322,7 @@ def main():
         ax.legend(lines1 + lines2, labels1 + labels2, loc='center right')
         ax.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig('plots/lstm_training_curves.png', dpi=150, bbox_inches='tight')
+    plt.savefig(f'{PLOT_DIR}/lstm_training_curves.png', dpi=150, bbox_inches='tight')
 
     # Precision-Recall Curve
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
@@ -411,7 +343,7 @@ def main():
         ax.legend(loc='upper right')
         ax.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig('plots/lstm_pr_curves.png', dpi=150, bbox_inches='tight')
+    plt.savefig(f'{PLOT_DIR}/lstm_pr_curves.png', dpi=150, bbox_inches='tight')
 
     # ROC Curve
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
@@ -430,28 +362,25 @@ def main():
         ax.legend(loc='lower right')
         ax.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig('plots/roc_all_models.png', dpi=150, bbox_inches='tight')
+    plt.savefig(f'{PLOT_DIR}/roc_all_models.png', dpi=150, bbox_inches='tight')
 
     # Save models
-    joblib.dump(model_all_scale, 'lstm_results/model_lstm_all_scale.pkl')
-    joblib.dump(model_pre_scale, 'lstm_results/model_lstm_pre_scale.pkl')
-    joblib.dump(model_all_smote, 'lstm_results/model_lstm_all_smote.pkl')
-    joblib.dump(model_pre_smote, 'lstm_results/model_lstm_pre_smote.pkl')
+    joblib.dump(model_all_scale, f'{OUT_DIR}/model_lstm_all_scale.pkl')
+    joblib.dump(model_pre_scale, f'{OUT_DIR}/model_lstm_pre_scale.pkl')
+    joblib.dump(model_all_smote, f'{OUT_DIR}/model_lstm_all_smote.pkl')
+    joblib.dump(model_pre_smote, f'{OUT_DIR}/model_lstm_pre_smote.pkl')
 
     # Save test data + predictions
-    np.save('lstm_results/X_test_all.npy',    X_test_all)
-    np.save('lstm_results/y_test_all.npy',    y_test_all)
-    np.save('lstm_results/X_train_all.npy',   X_train_all)
-    np.save('lstm_results/y_train_all.npy',   y_train_all)
-    np.save('lstm_results/X_test_pre.npy',    X_test_pre)
-    np.save('lstm_results/y_test_pre.npy',    y_test_pre)
-    np.save('lstm_results/X_train_pre.npy',   X_train_pre)
-    np.save('lstm_results/y_train_pre.npy',   y_train_pre)
+    np.save(f'{OUT_DIR}/X_test_all.npy',    X_test_all)
+    np.save(f'{OUT_DIR}/y_test_all.npy',    y_test_all)
+    np.save(f'{OUT_DIR}/X_train_all.npy',   X_train_all)
+    np.save(f'{OUT_DIR}/y_train_all.npy',   y_train_all)
+    np.save(f'{OUT_DIR}/X_test_pre.npy',    X_test_pre)
+    np.save(f'{OUT_DIR}/y_test_pre.npy',    y_test_pre)
+    np.save(f'{OUT_DIR}/X_train_pre.npy',   X_train_pre)
+    np.save(f'{OUT_DIR}/y_train_pre.npy',   y_train_pre)
 
     # Save results dict
-    with open('lstm_results/results_lstm.pkl', 'wb') as f:
+    with open(f'{OUT_DIR}/results_lstm.pkl', 'wb') as f:
         pickle.dump({'all_scale': res_all_scale, 'pre_scale': res_pre_scale,
                     'all_smote': res_all_smote, 'pre_smote': res_pre_smote}, f)
-
-if __name__ == "__main__":
-    main()

@@ -1,4 +1,3 @@
-import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -10,43 +9,18 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score
 
+from utils.common import create_folder
 
-# ── Folders ───────────────────────────────────────────────────────────────────
+# Build patient-level summary with pre-onset features and label
 
-def create_folder():
-    for folder in ['plots/converter_clustering', 'converter_clustering_results']:
-        os.makedirs(folder, exist_ok=True)
+# Coverters - who develop CKD at some point → use only pre-CKD years
+# Stable - who never develop CKD → use all years
 
-# ── Config ────────────────────────────────────────────────────────────────────
+# mean and slope of continuous features
+# proportion of years active for binary features
+# static features (first value)
 
-OUT = 'plots/converter_clustering'
-
-# Features used to characterise patient trajectories at patient level
-CONTINUOUS_FEATS = [
-    'weight_in_kg', 'BMI_in_kg_per_m2', 'calorie_intake_per_day',
-    'comorbidity_score', 'lifestyle_score'
-]
-BINARY_FEATS = [
-    'takes_insulin', 'urinary_infection', 'has_heart_disease',
-    'takes_pain_killer', 'has_hypertension'
-]
-STATIC_FEATS = ['Gender']      # first-value features
-
-
-# ── Patient-level feature builder ─────────────────────────────────────────────
-
-def build_patient_summary(df):
-    """
-    For each patient, aggregate all pre-CKD years into a single feature vector.
-    Converters  → use only years before first CKD=1
-    Stable      → use all years (never CKD)
-    Returns a DataFrame indexed by patient_id with:
-      - mean of continuous features
-      - slope of continuous features (linear trend over pre-onset years)
-      - sum / proportion of binary features
-      - static features (first value)
-      - label: 1=converter, 0=stable
-    """
+def build_patient_summary(df, CONTINUOUS_FEATS, BINARY_FEATS, STATIC_FEATS):
     records = []
     for pid, grp in df.groupby('patient_id'):
         grp = grp.sort_values('diabetic_year').reset_index(drop=True)
@@ -91,30 +65,31 @@ def build_patient_summary(df):
         # duration of pre-onset window
         row['pre_onset_years'] = len(pre)
 
+        # causal indicators based on previous analysis 
+        row['bmi_high']   = int(pre['bmi_change'].mean()     >= 0.3)
+        row['poor_diet']  = int(pre['diet_regulation'].mean() < 0.5)
+        row['insulin_high'] = int(pre['takes_insulin'].mean() >= 0.5)
+
         records.append(row)
 
     summary = pd.DataFrame(records).set_index('patient_id')
     return summary
 
 
-# ── Cluster converters ────────────────────────────────────────────────────────
+# Cluster those patients who convert to CKD using their trajectory features (means and slopes).
 
 def cluster_converters(summary_df, n_clusters=3, random_state=42):
-    """
-    Cluster only the converter group using trajectory features.
-    Returns cluster labels and the scaler for later use.
-    """
     converters = summary_df[summary_df['ckd_converter'] == 1].copy()
 
     # drop label and any non-numeric cols
     feat_cols = [c for c in converters.columns
-                 if c not in ['ckd_converter'] and converters[c].dtype != object]
+                 if c not in ['ckd_converter', 'pre_onset_years'] and converters[c].dtype != object]
     X = converters[feat_cols].dropna(axis=1)  # drop cols with NaN
 
     scaler = StandardScaler()
     X_sc   = scaler.fit_transform(X)
 
-    # silhouette sweep to find best k
+    # silhouette score to find best k
     sil_scores = {}
     for k in range(2, 6):
         km  = KMeans(n_clusters=k, random_state=random_state, n_init=20)
@@ -134,22 +109,29 @@ def cluster_converters(summary_df, n_clusters=3, random_state=42):
     return converters, X, X_sc, feat_cols, best_k, sil_scores
 
 
-# ── Profile each cluster ──────────────────────────────────────────────────────
+# For each cluster, compute mean feature values and print a summary.
 
-def profile_clusters(converters_clustered, feat_cols):
-    """
-    For each cluster, compute mean feature values and print a summary.
-    Also runs Mann-Whitney U between cluster pairs for key features.
-    """
+def profile_clusters(converters_clustered, feat_cols, results_out):
     print("\n══ Cluster Profiles ══")
     profile = converters_clustered.groupby('cluster')[feat_cols].mean()
     print(profile.T.to_string())
 
-    profile.T.to_csv('converter_clustering_results/cluster_profiles.csv')
+    # pre-onset window duration per cluster
+    print ("\nPre-onset window duration (years) per cluster:")
+    print(converters_clustered.groupby('cluster')['pre_onset_years'].describe())
+
+    # causal exposure prevalence per cluster
+    causal_flags = ['bmi_high', 'poor_diet', 'insulin_high']
+    causal_flags = [f for f in causal_flags if f in converters_clustered.columns]
+    if causal_flags:
+        print("\nCausal Exposure Prevalence per Cluster:")
+        print(converters_clustered.groupby('cluster')[causal_flags].mean().round(3).to_string())
+
+    profile.T.to_csv(f'{results_out}/cluster_profiles.csv')
     return profile
 
 
-# ── PCA visualisation ─────────────────────────────────────────────────────────
+# PCA plot of clusters 
 
 def plot_pca_clusters(X_sc, labels, best_k, out_dir):
     pca   = PCA(n_components=2, random_state=42)
@@ -173,7 +155,7 @@ def plot_pca_clusters(X_sc, labels, best_k, out_dir):
     print(f"  PCA cluster plot saved.")
 
 
-# ── Radar / spider chart per cluster ──────────────────────────────────────────
+# Radar chart comparing cluster profiles
 
 def plot_radar_clusters(profile, out_dir):
     """
@@ -209,15 +191,15 @@ def plot_radar_clusters(profile, out_dir):
     print(f"  Radar chart saved.")
 
 
-# ── Trajectory mean plots per cluster ─────────────────────────────────────────
+# Trajectory plots of key features for each cluster
 
 def plot_mean_trajectories(df, converters_clustered, out_dir):
     """
     For each cluster, plot the mean year-by-year trajectory of key features
     aligned relative to CKD onset (year -1, -2, ... from onset).
     """
-    key_feats = ['weight_in_kg', 'comorbidity_score', 'lifestyle_score',
-                 'calorie_intake_per_day', 'takes_insulin']
+    key_feats = ['weight_in_kg', 'weight_change', 'bmi_change',
+                 'BMI_in_kg_per_m2', 'takes_insulin', 'diet_regulation']
     key_feats = [f for f in key_feats if f in df.columns]
 
     cluster_ids = sorted(converters_clustered['cluster'].unique())
@@ -256,10 +238,9 @@ def plot_mean_trajectories(df, converters_clustered, out_dir):
 
     print(f"  Mean trajectory plots saved for: {key_feats}")
 
+# Coverter vs Stable slope comparison 
 
-# ── Converter vs Stable comparison ───────────────────────────────────────────
-
-def plot_converter_vs_stable(summary_df, out_dir):
+def plot_converter_vs_stable(summary_df, plots_out, results_out):
     """
     Compare slope features between converters and stable non-CKD patients.
     """
@@ -288,7 +269,7 @@ def plot_converter_vs_stable(summary_df, out_dir):
     result_df = pd.DataFrame(rows).sort_values('p_value')
     print("\n══ Converter vs Stable — Slope Features (Mann-Whitney U) ══")
     print(result_df.to_string(index=False))
-    result_df.to_csv('converter_clustering_results/converter_vs_stable_slopes.csv', index=False)
+    result_df.to_csv(f'{results_out}/converter_vs_stable_slopes.csv', index=False)
 
     # bar chart of slope differences
     sig = result_df[result_df['significant']]
@@ -308,14 +289,14 @@ def plot_converter_vs_stable(summary_df, out_dir):
     ax.legend()
     ax.grid(axis='x', alpha=0.3)
     plt.tight_layout()
-    plt.savefig(f'{out_dir}/slope_comparison.png', dpi=150, bbox_inches='tight')
+    plt.savefig(f'{plots_out}/slope_comparison.png', dpi=150, bbox_inches='tight')
     plt.close()
     print("  Slope comparison chart saved.")
 
     return result_df
 
 
-# ── Silhouette plot ───────────────────────────────────────────────────────────
+# Silhouette score plot for different k values
 
 def plot_silhouette(sil_scores, out_dir):
     fig, ax = plt.subplots(figsize=(5, 3))
@@ -330,7 +311,7 @@ def plot_silhouette(sil_scores, out_dir):
     print("  Silhouette score plot saved.")
 
 
-# ── Cluster size summary ──────────────────────────────────────────────────────
+# Cluster size summary
 
 def print_cluster_summary(converters_clustered):
     print("\n══ Cluster Size Summary ══")
@@ -340,71 +321,61 @@ def print_cluster_summary(converters_clustered):
         print(f"  Cluster {cid}: {cnt} patients ({pct:.1f}%)")
 
 
-# ── Main ──────────────────────────────────────────────────────────────────────
+# MAIN FUNCTION
 
-def main():
-    create_folder()
+def main(base_dir):
+    create_folder(base_dir, ['plots/clustering', 'results/clustering'])
+    PLOTS_OUT = f'{base_dir}/plots/clustering'
+    RESULTS_OUT = f'{base_dir}/results/clustering'
+
+    # Features used to characterise patient trajectories at patient level
+    CONTINUOUS_FEATS = [
+        'weight_in_kg', 'BMI_in_kg_per_m2', 'bmi_change', 'weight_change'
+    ]
+    BINARY_FEATS = [
+        'takes_insulin', 'urinary_infection', 'has_heart_disease',
+        'takes_pain_killer', 'has_hypertension', 'sufficient_sleep',
+        'urinary_infection', 'takes_pain_killer',
+        'smoking_habit', 'takes_tobacco',
+    ]
+    STATIC_FEATS = ['gender', 'job', 'family_diabetic_history', 'calorie_intake_per_day']
 
     print("Loading datasets...")
-    train_df = pd.DataFrame(
-        np.load('dataset/train_df.npy', allow_pickle=True),
-        columns=pd.read_csv('dataset/column_names.csv').iloc[:, 0].tolist()
-    )
-    val_df = pd.DataFrame(
-        np.load('dataset/val_df.npy', allow_pickle=True),
-        columns=train_df.columns
-    )
-    test_df = pd.DataFrame(
-        np.load('dataset/test_df.npy', allow_pickle=True),
-        columns=train_df.columns
+    df = pd.DataFrame(
+        np.load(f'{base_dir}/dataset/clean_data.npy', allow_pickle=True),
+        columns=pd.read_csv(f'{base_dir}/dataset/column_names.csv').iloc[:, 0].tolist()
     )
 
-    # combine all splits for patient-level analysis (no leakage risk here — unsupervised)
-    full_df = pd.concat([train_df, val_df, test_df], ignore_index=True)
-    print(f"  Total records: {len(full_df)}  |  Patients: {full_df['patient_id'].nunique()}")
+    print(f"  Total records: {len(df)}  |  Patients: {df['patient_id'].nunique()}")
 
-    # ═════════════════════════════════════════════════════════════════════════
-    # STEP 1 — Build patient-level summary
-    # ═════════════════════════════════════════════════════════════════════════
+    # Build patient-level summary
     print("\nBuilding patient-level pre-onset summaries...")
-    summary_df = build_patient_summary(full_df)
+    summary_df = build_patient_summary(df, CONTINUOUS_FEATS, BINARY_FEATS, STATIC_FEATS)
     n_conv   = (summary_df['ckd_converter'] == 1).sum()
     n_stable = (summary_df['ckd_converter'] == 0).sum()
     print(f"  Converters : {n_conv}")
     print(f"  Stable     : {n_stable}")
-    summary_df.to_csv('converter_clustering_results/patient_summary.csv')
+    summary_df.to_csv(f'{RESULTS_OUT}/patient_summary.csv')
 
-    # ═════════════════════════════════════════════════════════════════════════
-    # STEP 2 — Converter vs Stable slope comparison
-    # ═════════════════════════════════════════════════════════════════════════
+    # Converter vs Stable slope comparison
     print("\nComparing converter vs stable trajectories...")
-    plot_converter_vs_stable(summary_df, OUT)
+    plot_converter_vs_stable(summary_df, PLOTS_OUT, RESULTS_OUT)
 
-    # ═════════════════════════════════════════════════════════════════════════
-    # STEP 3 — Cluster converters
-    # ═════════════════════════════════════════════════════════════════════════
+    # Cluster converters
     print("\nClustering converter group...")
     converters_clustered, X, X_sc, feat_cols, best_k, sil_scores = cluster_converters(summary_df)
     print_cluster_summary(converters_clustered)
-    converters_clustered.to_csv('converter_clustering_results/converters_with_clusters.csv')
+    converters_clustered.to_csv(f'{RESULTS_OUT}/converters_with_clusters.csv')
 
-    # ═════════════════════════════════════════════════════════════════════════
-    # STEP 4 — Profile clusters
-    # ═════════════════════════════════════════════════════════════════════════
-    profile = profile_clusters(converters_clustered, feat_cols)
+    # Profile clusters
+    profile = profile_clusters(converters_clustered, feat_cols, RESULTS_OUT)
 
-    # ═════════════════════════════════════════════════════════════════════════
-    # STEP 5 — Visualisations
-    # ═════════════════════════════════════════════════════════════════════════
+    # Visualisations
     print("\nGenerating visualisations...")
 
-    plot_silhouette(sil_scores, OUT)
-    plot_pca_clusters(X_sc, converters_clustered['cluster'].values, best_k, OUT)
-    plot_radar_clusters(profile, OUT)
-    plot_mean_trajectories(full_df, converters_clustered, OUT)
+    plot_silhouette(sil_scores, PLOTS_OUT)
+    plot_pca_clusters(X_sc, converters_clustered['cluster'].values, best_k, PLOTS_OUT)
+    plot_radar_clusters(profile, PLOTS_OUT)
+    plot_mean_trajectories(df, converters_clustered, PLOTS_OUT)
 
-    print("\nDone. Results saved to 'converter_clustering_results/' and 'plots/converter_clustering/'")
-
-
-if __name__ == "__main__":
-    main()
+    print("\nDone. Results saved to 'results/clustering/' and 'plots/clustering/'")

@@ -9,14 +9,12 @@ import shap
 from scipy.stats import linregress
 from sklearn.metrics import (roc_curve, precision_recall_curve)
 
-from utils import xgb_fit_evaluate, rf_fit_evaluate, apply_smote, scale_splits
+from utils.rf_xgb import (
+    xgb_fit_evaluate, rf_fit_evaluate, apply_smote, 
+    scale_splits
+)
 
-
-# ── Folders ───────────────────────────────────────────────────────────────────
-
-def create_folder():
-    for folder in ['plots/trajectory', 'trajectory_results']:
-        os.makedirs(folder, exist_ok=True)
+from utils.common import create_folder, show_results
 
 
 # ── Trajectory feature config ─────────────────────────────────────────────────
@@ -137,22 +135,6 @@ def build_augmented(X_flat, window_size=5):
 
 def build_replace(X_flat, window_size=5):
     return add_trajectory_features(X_flat, window_size).reset_index(drop=True)
-
-
-# ── Summary printer ───────────────────────────────────────────────────────────
-
-def show_results(label, results):
-    print(f"\n{label} Results:")
-    df = pd.DataFrame([{
-        'Model'        : r['model'],
-        'Experiment'   : r['experiment'],
-        'ROC-AUC'      : round(r['roc_auc'],    4),
-        'PR-AUC'       : round(r['pr_auc'],     4),
-        'F1 (CKD)'     : round(r['f1_ckd'],     4),
-        'Recall (CKD)' : round(r['recall_ckd'], 4),
-        'Threshold'    : round(r['threshold'],  3),
-    } for r in results])
-    print(df.to_string(index=False))
 
 
 # ── SHAP analysis ─────────────────────────────────────────────────────────────
@@ -283,7 +265,7 @@ def plot_feature_importance(importances_dict, top_n, suffix, out_dir):
     plt.close()
 
 
-def plot_trajectory_vs_raw_shap(mean_shap_aug, top_n=15, out_dir='plots/trajectory'):
+def plot_trajectory_vs_raw_shap(mean_shap_aug, out_dir, top_n=15):
     traj_names = [c for c in mean_shap_aug.index if any(
         c.endswith(s) for s in ['_slope', '_std', '_accel', '_wmean', '_window_sum', '_first_occur']
     )]
@@ -358,21 +340,22 @@ def plot_comparison_bar(baseline_results, traj_aug_results, traj_rep_results, ou
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
-def main():
-    create_folder()
-    OUT = 'plots/trajectory'
+def main(base_dir):
+    create_folder(base_dir, ['plots/trajectory', 'results/trajectory'])
+    OUT = f'{base_dir}/plots/trajectory'
+    RESULTS_OUT = f'{base_dir}/results/trajectory'
 
     print("Loading datasets...")
     train_df = pd.DataFrame(
-        np.load('dataset/train_df.npy', allow_pickle=True),
-        columns=pd.read_csv('dataset/column_names.csv').iloc[:, 0].tolist()
+        np.load(f'{base_dir}/dataset/train_df.npy', allow_pickle=True),
+        columns=pd.read_csv(f'{base_dir}/dataset/column_names.csv').iloc[:, 0].tolist()
     )
     val_df = pd.DataFrame(
-        np.load('dataset/val_df.npy', allow_pickle=True),
+        np.load(f'{base_dir}/dataset/val_df.npy', allow_pickle=True),
         columns=train_df.columns
     )
     test_df = pd.DataFrame(
-        np.load('dataset/test_df.npy', allow_pickle=True),
+        np.load(f'{base_dir}/dataset/test_df.npy', allow_pickle=True),
         columns=train_df.columns
     )
 
@@ -601,7 +584,7 @@ def main():
     run_shap_timestep(xgb_aug_all_pw, X_te_all_aug_sc, 'XGBoost Augmented All Windows', OUT)
     run_shap_timestep(xgb_aug_pre_pw, X_te_pre_aug_sc, 'XGBoost Augmented Pre-onset',   OUT)
 
-    plot_trajectory_vs_raw_shap(mean_shap_aug_all, top_n=15, out_dir=OUT)
+    plot_trajectory_vs_raw_shap(mean_shap_aug_all, OUT, top_n=15)
 
     # ═════════════════════════════════════════════════════════════════════════
     # VISUALISATIONS
@@ -645,7 +628,7 @@ def main():
 
     # baseline results for comparison plot — load from previous run
     try:
-        with open('rf_xgb_results/results_rf_xgb.pkl', 'rb') as f:
+        with open(f'{base_dir}/rf_xgb_results/results_rf_xgb.pkl', 'rb') as f:
             prev = pickle.load(f)
         baseline_results = [
             prev['rf_all'], prev['rf_pre'],
@@ -676,26 +659,26 @@ def main():
     # ═════════════════════════════════════════════════════════════════════════
     print("\nSaving models and results...")
 
-    joblib.dump(rf_aug_all,      'trajectory_results/model_rf_aug_all.pkl')
-    joblib.dump(rf_aug_pre,      'trajectory_results/model_rf_aug_pre.pkl')
-    joblib.dump(rf_rep_all,      'trajectory_results/model_rf_rep_all.pkl')
-    joblib.dump(rf_rep_pre,      'trajectory_results/model_rf_rep_pre.pkl')
-    joblib.dump(xgb_aug_all_pw,  'trajectory_results/model_xgb_aug_all_pw.pkl')
-    joblib.dump(xgb_aug_pre_pw,  'trajectory_results/model_xgb_aug_pre_pw.pkl')
-    joblib.dump(xgb_rep_all_pw,  'trajectory_results/model_xgb_rep_all_pw.pkl')
-    joblib.dump(xgb_rep_pre_pw,  'trajectory_results/model_xgb_rep_pre_pw.pkl')
+    joblib.dump(rf_aug_all,      f'{RESULTS_OUT}/model_rf_aug_all.pkl')
+    joblib.dump(rf_aug_pre,      f'{RESULTS_OUT}/model_rf_aug_pre.pkl')
+    joblib.dump(rf_rep_all,      f'{RESULTS_OUT}/model_rf_rep_all.pkl')
+    joblib.dump(rf_rep_pre,      f'{RESULTS_OUT}/model_rf_rep_pre.pkl')
+    joblib.dump(xgb_aug_all_pw,  f'{RESULTS_OUT}/model_xgb_aug_all_pw.pkl')
+    joblib.dump(xgb_aug_pre_pw,  f'{RESULTS_OUT}/model_xgb_aug_pre_pw.pkl')
+    joblib.dump(xgb_rep_all_pw,  f'{RESULTS_OUT}/model_xgb_rep_all_pw.pkl')
+    joblib.dump(xgb_rep_pre_pw,  f'{RESULTS_OUT}/model_xgb_rep_pre_pw.pkl')
 
-    np.save('trajectory_results/X_test_all_aug.npy', X_te_all_aug_sc.values)
-    np.save('trajectory_results/X_test_pre_aug.npy', X_te_pre_aug_sc.values)
-    np.save('trajectory_results/X_test_all_rep.npy', X_te_all_rep_sc.values)
-    np.save('trajectory_results/X_test_pre_rep.npy', X_te_pre_rep_sc.values)
-    np.save('trajectory_results/y_test_all.npy',     y_te_all)
-    np.save('trajectory_results/y_test_pre.npy',     y_te_pre)
+    np.save(f'{RESULTS_OUT}/X_test_all_aug.npy', X_te_all_aug_sc.values)
+    np.save(f'{RESULTS_OUT}/X_test_pre_aug.npy', X_te_pre_aug_sc.values)
+    np.save(f'{RESULTS_OUT}/X_test_all_rep.npy', X_te_all_rep_sc.values)
+    np.save(f'{RESULTS_OUT}/X_test_pre_rep.npy', X_te_pre_rep_sc.values)
+    np.save(f'{RESULTS_OUT}/y_test_all.npy',     y_te_all)
+    np.save(f'{RESULTS_OUT}/y_test_pre.npy',     y_te_pre)
 
-    pd.Series(X_te_all_aug_sc.columns).to_csv('trajectory_results/feature_names_aug.csv',  index=False)
-    pd.Series(X_te_all_rep_sc.columns).to_csv('trajectory_results/feature_names_rep.csv',  index=False)
+    pd.Series(X_te_all_aug_sc.columns).to_csv(f'{RESULTS_OUT}/feature_names_aug.csv',  index=False)
+    pd.Series(X_te_all_rep_sc.columns).to_csv(f'{RESULTS_OUT}/feature_names_rep.csv',  index=False)
 
-    with open('trajectory_results/results_trajectory.pkl', 'wb') as f:
+    with open(f'{RESULTS_OUT}/results_trajectory.pkl', 'wb') as f:
         pickle.dump({
             'res_rf_aug_all'      : res_rf_aug_all,
             'res_rf_aug_pre'      : res_rf_aug_pre,

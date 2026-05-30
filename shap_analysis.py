@@ -8,19 +8,9 @@ import seaborn as sns
 import joblib
 import shap
 import warnings
-warnings.filterwarnings('ignore')
- 
-from sklearn.model_selection import train_test_split
-from sklearn.metrics         import roc_auc_score
-from xgboost                 import XGBClassifier
+from utils.common import create_folder
 
-def create_folder():
-    folders = ['plots']
-    cwd = os.getcwd()
-    for folder in folders:
-        folder_name = os.path.join(cwd, folder)
-        if not os.path.exists(folder_name):
-            os.makedirs(folder_name)
+warnings.filterwarnings('ignore')
 
 def compute_shap_values(model, X_test, experiment):
     print(f"\nComputing SHAP values for {experiment} windows...")
@@ -45,16 +35,20 @@ def top_n_shap_features(shap_values, X_test, FEATURE_COLS, n=15):
     print(mean_abs_shap.head(15).to_string())
     return mean_abs_shap
 
-def main():
+def main(base_dir):
 
-    create_folder()
+    create_folder(base_dir, ['plots/shap', 'results/shap'])
+
+    PLOTS_DIR = f'{base_dir}/plots/shap'
+    XGB_RESULTS = f'{base_dir}/results/rf_xgb'
+    OUT_DIR = f'{base_dir}/results/shap'
 
     print("Initializing SHAP analysis...")
 
     print("\nLoading dataset...")
     df = pd.DataFrame(
-        np.load('dataset/clean_data.npy', allow_pickle=True),
-        columns=pd.read_csv('dataset/column_names.csv').iloc[:,0].tolist()
+        np.load(f'{base_dir}/dataset/clean_data.npy', allow_pickle=True),
+        columns=pd.read_csv(f'{base_dir}/dataset/column_names.csv').iloc[:,0].tolist()
     )
 
     print(f"Dataset shape: {df.shape}")
@@ -65,33 +59,33 @@ def main():
 
     # Import trained XGBoost model and test dataset
     print("\nLoading trained XGBoost model and test dataset of all windows...")
-    model_xgb_all = joblib.load('rf_xgb_results/model_xgb_all_scale.pkl')
+    model_xgb_all = joblib.load(f'{XGB_RESULTS}/model_xgb_all_scale.pkl')
     X_test_all = pd.DataFrame(
-                    np.load('rf_xgb_results/X_test_all.npy'),
-                    columns=pd.read_csv('rf_xgb_results/feature_names_flat.csv').iloc[:,0].tolist()
+                    np.load(f'{XGB_RESULTS}/X_test_all.npy'),
+                    columns=pd.read_csv(f'{XGB_RESULTS}/feature_names_flat.csv').iloc[:,0].tolist()
                 )
     X_train_all = pd.DataFrame(
-                    np.load('rf_xgb_results/X_train_all.npy'),
+                    np.load(f'{XGB_RESULTS}/X_train_all.npy'),
                     columns=X_test_all.columns
                 )
-    y_test_all = np.load('rf_xgb_results/y_test_all.npy')
-    y_train_all = np.load('rf_xgb_results/y_train_all.npy')
-    pid_test_all = np.load('rf_xgb_results/pid_test_all.npy')
+    y_test_all = np.load(f'{XGB_RESULTS}/y_test_all.npy')
+    y_train_all = np.load(f'{XGB_RESULTS}/y_train_all.npy')
+    pid_test_all = np.load(f'{XGB_RESULTS}/pid_test_all.npy')
     print("Loaded saved model and test data.")
     
     print("\nLoading trained XGBoost model and test dataset of pre-onset windows...")
-    model_xgb_pre = joblib.load('rf_xgb_results/model_xgb_pre_scale.pkl')
+    model_xgb_pre = joblib.load(f'{XGB_RESULTS}/model_xgb_pre_scale.pkl')
     X_test_pre = pd.DataFrame(
-                    np.load('rf_xgb_results/X_test_pre.npy'),
-                    columns=pd.read_csv('rf_xgb_results/feature_names_flat.csv').iloc[:,0].tolist()
+                    np.load(f'{XGB_RESULTS}/X_test_pre.npy'),
+                    columns=pd.read_csv(f'{XGB_RESULTS}/feature_names_flat.csv').iloc[:,0].tolist()
                 )
     X_train_pre = pd.DataFrame(
-                    np.load('rf_xgb_results/X_train_pre.npy'),
+                    np.load(f'{XGB_RESULTS}/X_train_pre.npy'),
                     columns=X_test_pre.columns
                 )
-    y_test_pre = np.load('rf_xgb_results/y_test_pre.npy')
-    y_train_pre = np.load('rf_xgb_results/y_train_pre.npy')
-    pid_test_pre = np.load('rf_xgb_results/pid_test_pre.npy')
+    y_test_pre = np.load(f'{XGB_RESULTS}/y_test_pre.npy')
+    y_train_pre = np.load(f'{XGB_RESULTS}/y_train_pre.npy')
+    pid_test_pre = np.load(f'{XGB_RESULTS}/pid_test_pre.npy')
     print("Loaded saved model and test data.")
 
     print(f"Test dataset for all windows setup: {X_test_all.shape}")
@@ -109,8 +103,8 @@ def main():
     mean_abs_shap_all = top_n_shap_features(shap_values_all, X_test_all, FEATURE_COLS, n=15)
     mean_abs_shap_pre = top_n_shap_features(shap_values_pre, X_test_pre, FEATURE_COLS, n=15)
 
-    mean_abs_shap_all.to_csv('rf_xgb_results/mean_abs_shap_all.csv', header=True)
-    mean_abs_shap_pre.to_csv('rf_xgb_results/mean_abs_shap_pre.csv', header=True)
+    mean_abs_shap_all.to_csv(f'{OUT_DIR}/mean_abs_shap_all.csv', header=True)
+    mean_abs_shap_pre.to_csv(f'{OUT_DIR}/mean_abs_shap_pre.csv', header=True)
 
     # Plotting SHAP summary plots for top features
     fig, axes = plt.subplots(1, 2, figsize=(14, 12))
@@ -129,7 +123,7 @@ def main():
                     f'XGBoost, {experiment} experiment')
         ax.grid(axis='x', alpha=0.3)
     plt.tight_layout()
-    plt.savefig('plots/shap_global_bar.png', dpi=150, bbox_inches='tight')
+    plt.savefig(f'{PLOTS_DIR}/shap_global_bar.png', dpi=150, bbox_inches='tight')
 
     # Plotting beeswarm summary plots for top features for all windows
     top15_base  = mean_abs_shap_all.head(15).index.tolist()
@@ -152,7 +146,7 @@ def main():
                     max_display=15,
                     show=False)
     plt.tight_layout()
-    plt.savefig('plots/shap_beeswarm.png', dpi=150, bbox_inches='tight')
+    plt.savefig(f'{PLOTS_DIR}/shap_beeswarm.png', dpi=150, bbox_inches='tight')
 
     # Plotting timestep-level global SHAP values for all windows
     timestep_importance = {}
@@ -176,8 +170,4 @@ def main():
                 '(XGBoost SHAP — All windows)')
     ax.grid(axis='y', alpha=0.3)
     plt.tight_layout()
-    plt.savefig('plots/shap_timestep.png', dpi=150, bbox_inches='tight')
-
-
-if __name__ == "__main__":
-    main()
+    plt.savefig(f'{PLOTS_DIR}/shap_timestep.png', dpi=150, bbox_inches='tight')

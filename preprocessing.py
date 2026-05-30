@@ -81,8 +81,8 @@ def split_data(df):
     
     return train_df, val_df, test_df
 
-def main():
-    df = pd.read_csv('./dataset/DiabeticCKD_dataset.csv')
+def main(base_dir):
+    df = pd.read_csv(f'{base_dir}/dataset/DiabeticCKD_dataset.csv')
 
     # Display first 10 rows from dataset
     print(f"First 10 rows of the dataset:\n{df.head(10)}")
@@ -133,12 +133,9 @@ def main():
 
     # Save cleaned datasets and split datasets for later use
     print(f"\nSaving cleaned datasets and split datasets for later use...")
-    np.save('./dataset/clean_data.npy', df_clean)
-    np.save('./dataset/train_df.npy', train_df)
-    np.save('./dataset/val_df.npy', val_df)
-    np.save('./dataset/test_df.npy', test_df)
-    pd.Series(df_clean.columns).to_csv('./dataset/column_names.csv', index=False)
+    np.save(f'{base_dir}/dataset/clean_data.npy', df_clean)
+    np.save(f'{base_dir}/dataset/train_df.npy', train_df)
+    np.save(f'{base_dir}/dataset/val_df.npy', val_df)
+    np.save(f'{base_dir}/dataset/test_df.npy', test_df)
+    pd.Series(df_clean.columns).to_csv(f'{base_dir}/dataset/column_names.csv', index=False)
     print(f"\nData preprocessing completed and saved successfully!")
-
-if __name__ == "__main__":
-    main()

@@ -1,4 +1,4 @@
-import os
+# Import standard libraries
 import warnings
 import numpy as np
 import pandas as pd
@@ -11,29 +11,11 @@ from dowhy import CausalModel
 
 warnings.filterwarnings('ignore')
 
-os.makedirs('plots/causal', exist_ok=True)
-os.makedirs('causal_results', exist_ok=True)
+# Custom utilities
+from utils.common import create_folder
 
+# Configurations for causal analysis
 
-# ── Config ────────────────────────────────────────────────────────────────────
-
-# EXPOSURES = {
-#     'insulin_high'   : 'takes_insulin',
-#     'long_diabetes'  : 'diabetic_year',
-#     'bmi_high'       : 'bmi_change'
-# }
-
-# # Base confounders — mediators and colliders excluded
-# BASE_CONFOUNDERS = [
-#     'age_in_years', 'gender', 'family_diabetic_history', 'calorie_intake_per_day'
-# ]
-
-# # Added when not the exposure itself
-# EXTRA_CONFOUNDERS = {
-#     'insulin_high'   : ['BMI_in_kg_per_m2', 'diabetic_year_mean'],
-#     'long_diabetes'  : ['BMI_in_kg_per_m2'],
-#     'bmi_high'       : ['diabetic_year_mean']
-# }
 EXPOSURES = {
     'bmi_high'  : 'bmi_change',        
     'insulin_high'    : 'takes_insulin',      
@@ -62,7 +44,7 @@ EXTRA_CONFOUNDERS = {
 OUTCOME = 'ckd_ever'
 
 
-# ── Step 1: Build patient-level pre-onset summary ─────────────────────────────
+# Patient-level summary
 
 def build_patient_summary(data_df):
     records = []
@@ -96,7 +78,7 @@ def build_patient_summary(data_df):
     return df
 
 
-# ── Step 2: Binarise exposures ────────────────────────────────────────────────
+# Binarise exposures based on thresholds
 
 def binarise_exposures(df):
     df['insulin_high']   = (df['takes_insulin']          >= 0.5).astype(int)
@@ -112,7 +94,7 @@ def binarise_exposures(df):
     return df
 
 
-# ── Step 3: Build DAG ─────────────────────────────────────────────────────────
+# Build causal DAG for a given exposure and confounders
 
 def build_dag(treatment, confounders):
     G = nx.DiGraph()
@@ -123,8 +105,8 @@ def build_dag(treatment, confounders):
     return G
 
 
-# ── Step 4: Run DoWhy for one exposure ───────────────────────────────────────
 
+# Safe extraction of float from dowhy estimates, handling different return types
 def _safe_float(est):
     v = est.value
     if hasattr(v, 'iloc'):
@@ -134,6 +116,7 @@ def _safe_float(est):
     return float(v)
 
 
+# Linear regression adjustment for ATE estimation (used as a refutation method)
 def _lr_ate_direct(data, treatment, outcome, confounders):
     from sklearn.linear_model import LogisticRegression
     from sklearn.preprocessing import StandardScaler
@@ -150,7 +133,7 @@ def _lr_ate_direct(data, treatment, outcome, confounders):
     ate = float(lr.predict_proba(X1)[:, 1].mean() - lr.predict_proba(X0)[:, 1].mean())
     return ate
 
-
+# Run causal analysis for a given treatment, returning ATE estimates and refutation results
 def run_causal(df, treatment, verbose=True):
     confounders = BASE_CONFOUNDERS + EXTRA_CONFOUNDERS.get(treatment, [])
     confounders = [c for c in confounders if c in df.columns]
@@ -252,18 +235,9 @@ def run_causal(df, treatment, verbose=True):
     return results
 
 
-# ── Step 5: Comparison table ──────────────────────────────────────────────────
+# Comparison table of results across exposures and methods
 
-shap_preonset = pd.read_csv('rf_xgb_results/mean_abs_shap_pre.csv', index_col=0)
-shap_series = shap_preonset.squeeze()
-SHAP_PREONSET = {
-    'insulin_high':  shap_series['takes_insulin'],
-    'long_diabetes': shap_series['diabetic_year'],
-    'bmi_high':      shap_series['bmi_change'],
-    'poor_diet':     shap_series['diet_regulation']
-}
-
-def build_comparison_table(all_results):
+def build_comparison_table(all_results, SHAP_PREONSET, out_dir):
     rows = []
     for treatment, res in all_results.items():
         rows.append({
@@ -279,7 +253,7 @@ def build_comparison_table(all_results):
     df = pd.DataFrame(rows)
     print("\n\n══════ Comparison Table ══════")
     print(df.to_string(index=False))
-    df.to_csv('causal_results/comparison_table.csv', index=False)
+    df.to_csv(f'{out_dir}/comparison_table.csv', index=False)
     return df
 
 
@@ -310,7 +284,7 @@ def plot_dag(treatment, confounders, out_dir='plots/causal'):
     plt.close()
 
 
-def plot_ate_comparison(comparison_df, out_dir='plots/causal'):
+def plot_ate_comparison(comparison_df, out_dir):
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
     # ATE across methods
@@ -346,7 +320,7 @@ def plot_ate_comparison(comparison_df, out_dir='plots/causal'):
     plt.close()
 
 
-def plot_refutation(all_results, out_dir='plots/causal'):
+def plot_refutation(all_results, out_dir):
     treatments = list(all_results.keys())
     lr_ates    = [all_results[t].get('psm',         np.nan) for t in treatments]
     rc_ates    = [all_results[t].get('ref_random_cause', np.nan) for t in treatments]
@@ -371,27 +345,25 @@ def plot_refutation(all_results, out_dir='plots/causal'):
     plt.close()
 
 
-# ── Main ──────────────────────────────────────────────────────────────────────
+# Main function to run the entire causal analysis pipeline
 
-def main():
+def main(base_dir):
+
+    create_folder(base_dir, ['results/causal', 'plots/causal'])
+
+    PLOTS_DIR = base_dir / 'plots/causal'
+    RESULTS_DIR = base_dir / 'results/causal'
+
     print("Loading dataset...")
-    train_df = pd.DataFrame(
-        np.load('dataset/train_df.npy', allow_pickle=True),
-        columns=pd.read_csv('dataset/column_names.csv').iloc[:, 0].tolist()
+    df = pd.DataFrame(
+        np.load(f'{base_dir}/dataset/clean_data.npy', allow_pickle=True),
+        columns=pd.read_csv(f'{base_dir}/dataset/column_names.csv').iloc[:, 0].tolist()
     )
-    val_df = pd.DataFrame(
-        np.load('dataset/val_df.npy', allow_pickle=True),
-        columns=train_df.columns
-    )
-    test_df = pd.DataFrame(
-        np.load('dataset/test_df.npy', allow_pickle=True),
-        columns=train_df.columns
-    )
-    full_df = pd.concat([train_df, val_df, test_df], ignore_index=True)
-    print(f"Full dataset: {len(full_df)} rows | {full_df['patient_id'].nunique()} patients")
+    
+    print(f"Full dataset: {len(df)} rows | {df['patient_id'].nunique()} patients")
 
     print("\nBuilding patient-level pre-onset summary...")
-    patient_df = build_patient_summary(full_df)
+    patient_df = build_patient_summary(df)
 
     print("Shape of patient-level summary:", patient_df.shape)
 
@@ -407,14 +379,19 @@ def main():
         all_results[treatment] = run_causal(patient_df, treatment)
         plot_dag(treatment, BASE_CONFOUNDERS + EXTRA_CONFOUNDERS.get(treatment, []))
 
-    comparison_df = build_comparison_table(all_results)
+    shap_preonset = pd.read_csv(f'{base_dir}/results/shap/mean_abs_shap_pre.csv', index_col=0)
+    shap_series = shap_preonset.squeeze()
+    SHAP_PREONSET = {
+        'insulin_high':  shap_series['takes_insulin'],
+        'long_diabetes': shap_series['diabetic_year'],
+        'bmi_high':      shap_series['bmi_change'],
+        'poor_diet':     shap_series['diet_regulation']
+    }
+
+    comparison_df = build_comparison_table(all_results, SHAP_PREONSET, RESULTS_DIR)
 
     print("\nSaving visualisations...")
-    plot_ate_comparison(comparison_df)
-    plot_refutation(all_results)
+    plot_ate_comparison(comparison_df, PLOTS_DIR)
+    plot_refutation(all_results, PLOTS_DIR)
 
-    print("\nDone. Results saved to causal_results/ and plots/causal/")
-
-
-if __name__ == "__main__":
-    main()
+    print("\nDone. Results saved to results/causal/ and plots/causal/")

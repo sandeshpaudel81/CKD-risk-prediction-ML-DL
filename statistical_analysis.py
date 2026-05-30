@@ -2,19 +2,10 @@ import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-import seaborn as sns
- 
-from sklearn.model_selection import train_test_split
-from scipy.stats import mannwhitneyu, chi2_contingency, fisher_exact
-from scipy.stats import pointbiserialr, spearmanr
+from scipy.stats import mannwhitneyu, fisher_exact
+from scipy.stats import spearmanr
 from statsmodels.stats.multitest import multipletests
-
-def create_folder():
-    cwd = os.getcwd()
-    folder_name = os.path.join(cwd, 'plots')    
-    if not os.path.exists(folder_name):
-        os.makedirs(folder_name)
+from utils.common import create_folder
 
 def mann_whitney_u_test(df, ckd1, ckd0, CONTINUOUS_FEATURES):
     print("\nMann-Whitney U Test for Continuous Variables")
@@ -127,16 +118,19 @@ def spearman_correlation(df, CONTINUOUS_FEATURES, BINARY_FEATURES):
     print(corr_df.to_string(index=False))
     return corr_df
 
-def main():
+def main(base_dir):
 
-    create_folder()
+    create_folder(base_dir, ['plots/statistical_analysis'])
+
+    OUT = f"{base_dir}/plots/statistical_analysis"
+
     print("Statistical analysis of the dataset...")
 
     # Import cleaned datasets from files
     print("Importing cleaned datasets from files...")
     df = pd.DataFrame(
-        np.load('./dataset/clean_data.npy', allow_pickle=True),
-        columns=pd.read_csv('./dataset/column_names.csv').iloc[:,0].tolist()
+        np.load(f'{base_dir}/dataset/clean_data.npy', allow_pickle=True),
+        columns=pd.read_csv(f'{base_dir}/dataset/column_names.csv').iloc[:,0].tolist()
     )
 
     # Dataset shape, number of unique patients, and distribution of CKD classes
@@ -230,7 +224,7 @@ def main():
             'Red = risk factor  |  Blue = protective factor')
     plt.grid(axis='x', alpha=0.3)
     plt.tight_layout()
-    plt.savefig('plots/stat_spearman_correlation.png', dpi=150, bbox_inches='tight')
+    plt.savefig(f'{OUT}/stat_spearman_correlation.png', dpi=150, bbox_inches='tight')
 
     # Plotting odds ratio between two groups based on binary features
     sig_bin = bin_df[bin_df['p-value'] < 0.05].sort_values('Odds Ratio', ascending=False)
@@ -246,7 +240,7 @@ def main():
         plt.legend(fontsize=8)
         plt.grid(axis='x', alpha=0.3)
         plt.tight_layout()
-        plt.savefig('plots/stat_odds_ratio.png', dpi=150, bbox_inches='tight')
+        plt.savefig(f'{OUT}/stat_odds_ratio.png', dpi=150, bbox_inches='tight')
 
     # Distribution of continuous features using box plot across two groups
     sig_cont = cont_df[cont_df['p-value'] < 0.05]['Feature'].tolist()
@@ -276,7 +270,7 @@ def main():
         plt.suptitle('Distribution of significant continuous features: CKD vs No CKD',
                     fontsize=11, y=1.01)
         plt.tight_layout()
-        plt.savefig('plots/stat_boxplots.png', dpi=150, bbox_inches='tight')
+        plt.savefig(f'{OUT}/stat_boxplots.png', dpi=150, bbox_inches='tight')
 
     print("\nFINAL RESULT\n")
  

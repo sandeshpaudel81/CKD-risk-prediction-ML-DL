@@ -1,4 +1,2 @@
 __pycache__/
-bilstm_results/
-lstm_results/
-rf_xgb_results/
+results/
