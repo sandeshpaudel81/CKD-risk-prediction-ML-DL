@@ -43,8 +43,6 @@ def main(base_dir):
     XGB_RESULTS = f'{base_dir}/results/rf_xgb'
     OUT_DIR = f'{base_dir}/results/shap'
 
-    print("Initializing SHAP analysis...")
-
     print("\nLoading dataset...")
     df = pd.DataFrame(
         np.load(f'{base_dir}/dataset/clean_data.npy', allow_pickle=True),

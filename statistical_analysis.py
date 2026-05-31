@@ -124,8 +124,6 @@ def main(base_dir):
 
     OUT = f"{base_dir}/plots/statistical_analysis"
 
-    print("Statistical analysis of the dataset...")
-
     # Import cleaned datasets from files
     print("Importing cleaned datasets from files...")
     df = pd.DataFrame(
