@@ -1,6 +1,6 @@
-# CKD Risk Prediction in Diabetic Patients using Longitudinal Data and Machine Learning Approaches
+# Beyond Prediction: Longitudinal Machine Learning and Causal Inference for CKD Risk in Diabetic Patients
 
-A machine learning pipeline for predicting Chronic Kidney Disease (CKD) onset in diabetic patients using 10-year longitudinal data. The project covers statistical analysis, tree-based models (Random Forest, XGBoost), sequential deep learning models (Vanilla LSTM, BiLSTM+Attention), and SHAP interpretability analysis.
+A machine learning pipeline for predicting Chronic Kidney Disease (CKD) onset in diabetic patients using 10-year longitudinal data. The project covers statistical analysis, tree-based models (Random Forest, XGBoost), sequential deep learning models (Vanilla LSTM, BiLSTM+Attention), SHAP interpretability analysis, and causal inference analysis.
 
 ---
 
@@ -15,8 +15,11 @@ A machine learning pipeline for predicting Chronic Kidney Disease (CKD) onset in
 ├── vanilla_lstm.py          # Vanilla LSTM training + evaluation
 ├── bilstm_attention.py      # BiLSTM with Attention training + evaluation
 ├── shap_analysis.py         # SHAP interpretability for XGBoost models
+├── trajectory_analysis.py   # RF and XGBoost training on trajectory based features
+├── causal_analysis.py       # Causal Inference analysis
+├── converter_clustering.py  # Clustering patients who transitioned from non-CKD to CKD
 ├── requirements.txt         # Python dependencies
-└── README.md
+└── README.md           
 ```
 
 ---
@@ -40,7 +43,7 @@ cd /path/to/project
 ### 2. Create and activate a conda environment
 
 ```bash
-conda create -n ckd_prediction python=3.10
+conda create -n ckd_prediction python=3.14
 conda activate ckd_prediction
 ```
 
@@ -65,7 +68,9 @@ This runs all modules in sequence:
 4. Vanilla LSTM modelling
 5. BiLSTM+Attention modelling
 6. SHAP interpretability analysis
-
+7. Trajectory Analysis
+8. Causal Inference Analysis
+9. Converter Clustering Analysis
 ---
 
 ## Key Packages
@@ -92,3 +97,4 @@ This runs all modules in sequence:
 - Two experimental setups are evaluated: **All Windows** and **Pre-onset Only**.
 - Class imbalance is handled via **SMOTE** and **pos_weight scaling** — both strategies are compared per model.
 - All plots are written to an `plots/` directory created automatically on first run.
+- All results are saved to an `results/` directory.
