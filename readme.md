@@ -4,6 +4,25 @@ A machine learning pipeline for predicting Chronic Kidney Disease (CKD) onset in
 
 ---
 
+**Master's capstone, Charles Darwin University (June 2026)**
+Group 31: **Sandesh Prasad Paudel**, Sharad Kumar Ranabhat, Orchid Shrestha, Ekramul Hassan Samy
+Supervisor: Dr Sami Azam
+
+## My contribution
+I was the lead contributor. I designed and implemented the end-to-end data-processing pipeline
+(`preprocessing.py`, `utils/`, `main.py`): five-year sliding windows, patient-level 70/15/15 split,
+and leakage-safe scaling, SMOTE and threshold selection. I also built all the predictive models and evaluation pipelines:
+Random Forest and XGBoost (`rf_xgboost.py`), LSTM (`vanilla_lstm.py`) and BiLSTM with attention (`bilstm_attention.py`).
+
+## Key results
+- Five-year sliding windows predict CKD in the following year. The split is by patient (70/15/15), and scaling, SMOTE and thresholds are fitted on training/validation data only.
+- Class-weighted XGBoost performed best: ROC-AUC 0.874 with full history, and 0.730 (recall 0.80) when prior CKD history is excluded. LSTM and BiLSTM-attention did not outperform it.
+- SHAP: BMI change, diabetes duration and insulin use ranked highest.
+- Causal analysis (DAG adjustment, propensity methods, refutation tests): a high-BMI trajectory had the largest robust effect (ATE ≈ +0.54).
+
+## Limitations
+Public cohort of 400 patients without eGFR/creatinine; small pre-onset test set; observational causal estimates (positivity violation for diabetes duration); no external validation.
+
 ## Project Structure
 
 ```
